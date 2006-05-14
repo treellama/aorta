@@ -34,6 +34,15 @@ bool MainApp::OnInit()
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style) 
 : wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
 { 
+	fileMenu = new wxMenu;
+	fileMenu->Append(AORTA_ABOUT, "&About Aorta...");
+	fileMenu->AppendSeparator();
+	fileMenu->Append(AORTA_EXIT, "&Quit");
+
+	menuBar = new wxMenuBar;
+	menuBar->Append(fileMenu, "&File");
+	SetMenuBar(menuBar);
+	
 	wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 	notebook = new wxNotebook(this, -1);
 	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
@@ -102,6 +111,7 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	SetSizer(pageSizer);
 	pageSizer->Fit(this);
 	pageSizer->SetSizeHints(this);
+	Layout();
 }
 
 void BasicPage::OnLoadNormal(wxCommandEvent &)
