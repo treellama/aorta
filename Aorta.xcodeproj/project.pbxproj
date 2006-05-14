@@ -1,0 +1,331 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */; };
+		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
+		AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEBF5BA90A1642D200C810B8 /* image_ext.cpp */; };
+		AED0D9110A10256500C61B65 /* aorta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED0D9100A10256500C61B65 /* aorta.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXBuildStyle section */
+		AEBF58190A1025C300C810B8 /* Development */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Development;
+		};
+		AEBF581A0A1025C300C810B8 /* Deployment */ = {
+			isa = PBXBuildStyle;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Deployment;
+		};
+/* End PBXBuildStyle section */
+
+/* Begin PBXFileReference section */
+		AEBF58240A1025ED00C810B8 /* Aorta.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Aorta.icns; sourceTree = "<group>"; };
+		AEBF5B6B0A163E6300C810B8 /* image_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = image_ext.h; sourceTree = "<group>"; };
+		AEBF5BA90A1642D200C810B8 /* image_ext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = image_ext.cpp; sourceTree = "<group>"; };
+		AED0D8D00A101D4800C61B65 /* Aorta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aorta.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Aorta-Info.plist"; sourceTree = "<group>"; };
+		AED0D9090A10251B00C61B65 /* aorta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aorta.h; sourceTree = "<group>"; };
+		AED0D9100A10256500C61B65 /* aorta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aorta.cpp; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AED0D8CE0A101D4800C61B65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AE95AFE90A16A6EC00E758BE /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AEBF58240A1025ED00C810B8 /* Aorta.icns */,
+				AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		AED0D8B30A101C1500C61B65 = {
+			isa = PBXGroup;
+			children = (
+				AED0D9090A10251B00C61B65 /* aorta.h */,
+				AED0D9100A10256500C61B65 /* aorta.cpp */,
+				AEBF5B6B0A163E6300C810B8 /* image_ext.h */,
+				AEBF5BA90A1642D200C810B8 /* image_ext.cpp */,
+				AE95AFE90A16A6EC00E758BE /* Resources */,
+				AED0D8C70A101CBD00C61B65 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AED0D8C70A101CBD00C61B65 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AED0D8D00A101D4800C61B65 /* Aorta.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AED0D8CF0A101D4800C61B65 /* Aorta */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AED0D8D30A101D4800C61B65 /* Build configuration list for PBXNativeTarget "Aorta" */;
+			buildPhases = (
+				AED0D8CC0A101D4800C61B65 /* Resources */,
+				AED0D8CD0A101D4800C61B65 /* Sources */,
+				AED0D8CE0A101D4800C61B65 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INFOPLIST_FILE = "Aorta-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Aorta;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = YES;
+			};
+			dependencies = (
+			);
+			name = Aorta;
+			productName = Aorta;
+			productReference = AED0D8D00A101D4800C61B65 /* Aorta.app */;
+			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
+<plist version=\"1.0\">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>${EXECUTABLE_NAME}</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.yourcompany.Aorta</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+</dict>
+</plist>
+";
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AED0D8B50A101C1500C61B65 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = AED0D8B60A101C1500C61B65 /* Build configuration list for PBXProject "Aorta" */;
+			buildSettings = {
+			};
+			buildStyles = (
+				AEBF58190A1025C300C810B8 /* Development */,
+				AEBF581A0A1025C300C810B8 /* Deployment */,
+			);
+			hasScannedForEncodings = 0;
+			mainGroup = AED0D8B30A101C1500C61B65;
+			productRefGroup = AED0D8C70A101CBD00C61B65 /* Products */;
+			projectDirPath = "";
+			targets = (
+				AED0D8CF0A101D4800C61B65 /* Aorta */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AED0D8CC0A101D4800C61B65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */,
+				AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AED0D8CD0A101D4800C61B65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AED0D9110A10256500C61B65 /* aorta.cpp in Sources */,
+				AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AED0D8B70A101C1500C61B65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		AED0D8B80A101C1500C61B65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+		AED0D8D40A101D4800C61B65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INFOPLIST_FILE = "Aorta-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_CFLAGS = (
+					"-I/usr/lib/wx/include/mac-unicode-debug-2.5",
+					"-I/usr/include/wx-2.5",
+					"-D__WXDEBUG__",
+					"-D__WXMAC__",
+					"-D_FILE_OFFSET_BITS=64",
+					"-D_LARGE_FILES",
+					"-DNO_GCC_PRAGMA",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					Carbon,
+					"-framework",
+					QuickTime,
+					"-framework",
+					IOKit,
+					"-framework",
+					Carbon,
+					"-framework",
+					Cocoa,
+					"-framework",
+					System,
+					"-lwx_macud-2.5",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Aorta;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Debug;
+		};
+		AED0D8D50A101D4800C61B65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					i386,
+					ppc,
+				);
+				COPY_PHASE_STRIP = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
+				INFOPLIST_FILE = "Aorta-Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				OTHER_CFLAGS = (
+					"-I/usr/local/lib/wx/include/mac-ansi-release-static-2.6",
+					"-I/usr/local/include/wx-2.6",
+					"-D__WXMAC__",
+					"-D_FILE_OFFSET_BITS=64",
+					"-D_LARGE_FILES",
+					"-DNO_GCC_PRAGMA",
+				);
+				OTHER_LDFLAGS = (
+					"-L/usr/local/lib",
+					"-isysroot",
+					/Developer/SDKs/MacOSX10.4u.sdk,
+					"-framework",
+					QuickTime,
+					"-framework",
+					IOKit,
+					"-framework",
+					Carbon,
+					"-framework",
+					Cocoa,
+					"-framework",
+					System,
+					"/usr/local/lib/libwx_mac_xrc-2.6.a",
+					"/usr/local/lib/libwx_mac_qa-2.6.a",
+					"/usr/local/lib/libwx_mac_html-2.6.a",
+					"/usr/local/lib/libwx_mac_adv-2.6.a",
+					"/usr/local/lib/libwx_mac_core-2.6.a",
+					"/usr/local/lib/libwx_base_carbon_xml-2.6.a",
+					"/usr/local/lib/libwx_base_carbon_net-2.6.a",
+					"/usr/local/lib/libwx_base_carbon-2.6.a",
+					"-framework",
+					WebKit,
+					"-lwxexpat-2.6",
+					"-lwxtiff-2.6",
+					"-lwxjpeg-2.6",
+					"-lwxpng-2.6",
+					"-lz",
+					"-lpthread",
+					"-liconv",
+				);
+				PREBINDING = NO;
+				PRODUCT_NAME = Aorta;
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AED0D8B60A101C1500C61B65 /* Build configuration list for PBXProject "Aorta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AED0D8B70A101C1500C61B65 /* Debug */,
+				AED0D8B80A101C1500C61B65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AED0D8D30A101D4800C61B65 /* Build configuration list for PBXNativeTarget "Aorta" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AED0D8D40A101D4800C61B65 /* Debug */,
+				AED0D8D50A101D4800C61B65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AED0D8B50A101C1500C61B65 /* Project object */;
+}
