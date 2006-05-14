@@ -69,7 +69,7 @@ void wxImageExt::MaskToAlpha()
 void wxImageExt::PropRescale(int width, int height)
 {
 	float scale = (float) MAX(width, height) / MAX(GetWidth(), GetHeight());
-	Rescale(GetWidth() * scale, GetHeight() * scale);
+	Rescale((int) (GetWidth() * scale), (int) (GetHeight() * scale));
 	Resize(wxSize(width, height), wxPoint((width - GetWidth()) / 2, (height - GetHeight()) / 2));
 }
 
