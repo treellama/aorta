@@ -51,7 +51,12 @@ class MainFrame: public wxFrame // MainFrame is the class for our window,
 public: 
 	MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style); 
 	wxNotebook *notebook;
+	wxMenuBar *menuBar;
+	wxMenu *fileMenu;
 	void OnExit(wxCommandEvent& event);
+	void OnAbout(wxCommandEvent &) { }
+
+	DECLARE_EVENT_TABLE()
 
 }; 
 
@@ -93,7 +98,9 @@ private:
 
 enum
 {
-	BUTTON_NormalImage = wxID_HIGHEST + 1,
+	AORTA_EXIT = wxID_HIGHEST + 1,
+	AORTA_ABOUT,
+	BUTTON_NormalImage,
 	BUTTON_MaskImage,
 	BUTTON_ClearMask,
 	BUTTON_OpacTypeTwo,
@@ -101,15 +108,18 @@ enum
 	BUTTON_SaveAs
 };
 
-BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)
+BEGIN_EVENT_TABLE(MainFrame, wxFrame)
+EVT_MENU(AORTA_EXIT, MainFrame::OnExit)
+EVT_MENU(AORTA_ABOUT, MainFrame::OnAbout)
+END_EVENT_TABLE()
 
+BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)
 EVT_BUTTON(BUTTON_NormalImage, BasicPage::OnLoadNormal)
 EVT_BUTTON(BUTTON_MaskImage, BasicPage::OnLoadMask)
 EVT_BUTTON(BUTTON_ClearMask, BasicPage::OnClearMask)
 EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
 EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
 EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
-
 END_EVENT_TABLE()
 	
 
