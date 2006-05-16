@@ -11,6 +11,7 @@
 		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
 		AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEBF5BA90A1642D200C810B8 /* image_ext.cpp */; };
 		AED0D9110A10256500C61B65 /* aorta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED0D9100A10256500C61B65 /* aorta.cpp */; };
+		AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEFE01180A1979B700E99D09 /* imagdds.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildStyle section */
@@ -38,6 +39,8 @@
 		AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Aorta-Info.plist"; sourceTree = "<group>"; };
 		AED0D9090A10251B00C61B65 /* aorta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aorta.h; sourceTree = "<group>"; };
 		AED0D9100A10256500C61B65 /* aorta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aorta.cpp; sourceTree = "<group>"; };
+		AEFE01180A1979B700E99D09 /* imagdds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = imagdds.cpp; sourceTree = "<group>"; };
+		AEFE01190A1979B700E99D09 /* imagdds.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = imagdds.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +66,8 @@
 		AED0D8B30A101C1500C61B65 = {
 			isa = PBXGroup;
 			children = (
+				AEFE01180A1979B700E99D09 /* imagdds.cpp */,
+				AEFE01190A1979B700E99D09 /* imagdds.h */,
 				AED0D9090A10251B00C61B65 /* aorta.h */,
 				AED0D9100A10256500C61B65 /* aorta.cpp */,
 				AEBF5B6B0A163E6300C810B8 /* image_ext.h */,
@@ -178,6 +183,7 @@
 			files = (
 				AED0D9110A10256500C61B65 /* aorta.cpp in Sources */,
 				AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */,
+				AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,6 +285,7 @@
 					Cocoa,
 					"-framework",
 					System,
+					"/usr/local/lib/libwx_mac_gl-2.6.a",
 					"/usr/local/lib/libwx_mac_xrc-2.6.a",
 					"/usr/local/lib/libwx_mac_qa-2.6.a",
 					"/usr/local/lib/libwx_mac_html-2.6.a",
@@ -287,6 +294,10 @@
 					"/usr/local/lib/libwx_base_carbon_xml-2.6.a",
 					"/usr/local/lib/libwx_base_carbon_net-2.6.a",
 					"/usr/local/lib/libwx_base_carbon-2.6.a",
+					"-framework",
+					OpenGL,
+					"-framework",
+					AGL,
 					"-framework",
 					WebKit,
 					"-lwxexpat-2.6",
