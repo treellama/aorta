@@ -19,12 +19,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  
  */
 #include "aorta.h" 
+#include "imagdds.h"
 
 IMPLEMENT_APP(MainApp)  
 
 bool MainApp::OnInit() 
 { 
 	::wxInitAllImageHandlers();
+	wxDDSHandler *ddsHandler = new wxDDSHandler;
+	wxImage::AddHandler(ddsHandler);
 	MainFrame *MainWin = new MainFrame(_("Aorta"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~ (wxRESIZE_BORDER | wxRESIZE_BOX | wxMAXIMIZE_BOX)); 
 	MainWin->Show(TRUE); 
 	SetTopWindow(MainWin); 

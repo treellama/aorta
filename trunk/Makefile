@@ -29,7 +29,7 @@ PROGRAM = aorta
 
 # if your program has more than one source file, add more .o files to the line
 # below
-OBJECTS = $(PROGRAM).o image_ext.o
+OBJECTS = $(PROGRAM).o image_ext.o imagdds.o
 
 
 # you shouldn't have to edit anything below this line
@@ -43,11 +43,12 @@ CXX = $(shell $(WX_CONFIG) --cxx)
 all:    $(PROGRAM)
 
 $(PROGRAM):	$(OBJECTS)
-	$(CXX) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs`
+	$(CXX) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std,gl`
 
 clean: 
 	rm -f *.o $(PROGRAM)
 
-aorta.o: aorta.cpp aorta.h image_ext.h
+aorta.o: aorta.cpp aorta.h image_ext.h imagdds.h
+imagdds.o: imagdds.h
 image_ext.o: image_ext.cpp image_ext.h
 # DO NOT DELETE
