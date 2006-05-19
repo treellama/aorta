@@ -38,12 +38,12 @@ CXX = $(shell $(WX_CONFIG) --cxx)
 .SUFFIXES:	.o .cpp
 
 .cpp.o :
-	$(CXX) -c `$(WX_CONFIG) --cxxflags` -o $@ $<
+	$(CXX) -g -O2 -c `$(WX_CONFIG) --cxxflags` -o $@ $<
 
 all:    $(PROGRAM)
 
 $(PROGRAM):	$(OBJECTS)
-	$(CXX) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std,gl`
+	$(CXX) -g -O2 -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std,gl`
 
 clean: 
 	rm -f *.o $(PROGRAM)
