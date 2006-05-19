@@ -38,12 +38,12 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 : wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
 { 
 	fileMenu = new wxMenu;
-	fileMenu->Append(AORTA_ABOUT, "&About Aorta...");
+	fileMenu->Append(AORTA_ABOUT, _T("&About Aorta..."));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(AORTA_EXIT, "&Quit");
+	fileMenu->Append(AORTA_EXIT, _T("&Quit"));
 
 	menuBar = new wxMenuBar;
-	menuBar->Append(fileMenu, "&File");
+	menuBar->Append(fileMenu, _T("&File"));
 	SetMenuBar(menuBar);
 	
 	wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
@@ -123,7 +123,7 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 													 _("Choose Image"),
 													 _(""),
 													 _(""),
-													 _("Image Files ") + wxImage::GetImageExtWildcard() + "|All Files|*.*",
+													 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
 													 wxOPEN,
 													 wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
