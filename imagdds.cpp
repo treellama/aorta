@@ -22,6 +22,13 @@
 
 #define MAKE_FOURCC(a,b,c,d) (((wxUint32(d) << 24) | (wxUint32)(c) << 16) | ((wxUint32)(b) << 8) | (wxUint32)(a))
 
+static inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
+
 // I don't know of any way to get an opengl context without a window, so:
 class SubtleOpenGLContext
 {
@@ -107,14 +114,13 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     if (stream.LastRead() != sizeof(dwMagic)) return FALSE;
 
     if (wxINT32_SWAP_ON_BE(dwMagic) != MAKE_FOURCC('D', 'D', 'S', ' ')) return FALSE;
-
+    
     DDSURFACEDESC2 ddsd;
     if (!ReadHeader(stream, ddsd)) return FALSE;
-
+    
     // just read the first mipmap
     GLint internalFormat = GL_NONE;
-    if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC)
-    {
+    if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
 	if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1'))
 	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3'))
@@ -128,45 +134,62 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     int width = ddsd.dwWidth;
     int height = ddsd.dwHeight;
 
-    int compressedBufferSize = (width * height * bpp) / 8;
+    int potWidth = NextPowerOfTwo(width);
+    int potHeight = NextPowerOfTwo(height);
+
+    int compressedBufferSize = (potWidth * potHeight * bpp) / 8;
+
     GLbyte *compressedBuffer = new GLbyte[compressedBufferSize];
-    stream.Read(compressedBuffer, compressedBufferSize);
-    if (stream.LastRead() != compressedBufferSize) {
-	delete[] compressedBuffer;
-	return FALSE;
+    for (int row = 0; row < height / 4; row++) {
+	stream.Read(&compressedBuffer[row * potWidth / 4 * bpp * 2], width / 4 * bpp * 2);
+	if (stream.LastRead() != width / 4 * bpp * 2) {
+	    delete[] compressedBuffer;
+	    return FALSE;
+	}
     }
 
-    // create an OpenGL context
     {
 	SubtleOpenGLContext context;
-
+	
 	GLuint textureRef;
 	glGenTextures(1, &textureRef);
 	glEnable(GL_TEXTURE_2D);
 	glBindTexture(GL_TEXTURE_2D, textureRef);
-
-	glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, compressedBufferSize, compressedBuffer);
 	
-	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-	{
+	glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, potWidth, potHeight, 0, compressedBufferSize, compressedBuffer);
+	
+	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) {
 	    image->Create(width, height);
-	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, image->GetData());
-	} else if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)
-	{
-	    GLbyte *uncompressedBuffer = new GLbyte[width * height * 4];
-	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, uncompressedBuffer);
+	    GLbyte *uncompressedBuffer = new GLbyte[potWidth * potHeight * 3];
+	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uncompressedBuffer);
+	    for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+		    image->GetData()[(x + y * width) * 3 + 0] = uncompressedBuffer[(x + y * potWidth) * 3 + 0];
+		    image->GetData()[(x + y * width) * 3 + 1] = uncompressedBuffer[(x + y * potWidth) * 3 + 1];
+		    image->GetData()[(x + y * width) * 3 + 2] = uncompressedBuffer[(x + y * potWidth) * 3 + 2];
+		}
+	    }
 
+	    delete [] uncompressedBuffer;
+	} else if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT) {
+	    GLbyte *uncompressedBuffer = new GLbyte[potWidth * potHeight * 4];
+	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, uncompressedBuffer);
+	    
 	    image->Create(width, height);
 	    image->InitAlpha();
-	    for (int i = 0; i < width * height; i++)
-	    {
-		image->GetData()[i * 3 + 0] = uncompressedBuffer[i * 4 + 0];
-		image->GetData()[i * 3 + 1] = uncompressedBuffer[i * 4 + 1];
-		image->GetData()[i * 3 + 2] = uncompressedBuffer[i * 4 + 2];
-		image->GetAlpha()[i] = uncompressedBuffer[i * 4 + 3];
+	    for (int x = 0; x < width; x++) {
+		for (int y = 0; y < height; y++) {
+		    image->GetData()[(x + y * width) * 3 + 0] = uncompressedBuffer[(x + y * potWidth) * 4 + 0];
+		    image->GetData()[(x + y * width) * 3 + 1] = uncompressedBuffer[(x + y * potWidth) * 4 + 1];
+		    image->GetData()[(x + y * width) * 3 + 2] = uncompressedBuffer[(x + y * potWidth) * 4 + 2];
+		    image->GetAlpha()[x + y * width] = uncompressedBuffer[(x + y * potWidth) * 4 + 3];
+		}
 	    }
+	    
 	    delete[] uncompressedBuffer;
 	}
+
+	glDeleteTextures(1, &textureRef);
 	
     }
 
