@@ -22,6 +22,13 @@
 #include <wx/glcanvas.h>
 #endif
 
+#include "math.h"
+#include <vector>
+using namespace std;
+
+#ifndef MAX
+#define MAX(x, y) (y < x ? x : y)
+#endif
 
 #define MAKE_FOURCC(a,b,c,d) (((wxUint32(d) << 24) | (wxUint32)(c) << 16) | ((wxUint32)(b) << 8) | (wxUint32)(a))
 
@@ -41,14 +48,25 @@ public:
 	canvas = new wxGLCanvas(frame, -1, wxDefaultPosition, wxDefaultSize);
 	frame->Show();
 	canvas->SetCurrent();
+
+	glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
+
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glGenTextures(1, &textureRef);
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, textureRef);
     }
     
     ~SubtleOpenGLContext() {
+	glDeleteTextures(1, &textureRef);
 	frame->Close();
     }
 private:
     wxFrame *frame;
     wxGLCanvas *canvas;
+    GLuint textureRef;
 };
 
 bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)
@@ -182,11 +200,6 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     {
 	SubtleOpenGLContext context;
 	
-	GLuint textureRef;
-	glGenTextures(1, &textureRef);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textureRef);
-	
 	glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, potWidth, potHeight, 0, compressedBufferSize, compressedBuffer);
 	
 	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) {
@@ -220,8 +233,6 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	    delete[] uncompressedBuffer;
 	}
 
-	glDeleteTextures(1, &textureRef);
-	
     }
 
     delete[] compressedBuffer;
@@ -233,88 +244,114 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
     if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {
 	image->Rescale((image->GetWidth() + 3) & ~3, (image->GetHeight() + 3) & ~3);
     }
-    int potHeight = NextPowerOfTwo(image->GetHeight());
-    int potWidth = NextPowerOfTwo(image->GetWidth());
 
-    GLbyte *uncompressedBuffer;
-    if (image->HasAlpha()) {
-	uncompressedBuffer = new GLbyte[potHeight * potWidth * 4];
-	for (int x = 0; x < image->GetWidth(); x++) {
-	    for (int y = 0; y < image->GetHeight(); y++) {
-		uncompressedBuffer[(x + y * potWidth) * 4 + 0] = image->GetData()[(x + y * image->GetWidth()) * 3 + 0];
-		uncompressedBuffer[(x + y * potWidth) * 4 + 1] = image->GetData()[(x + y * image->GetWidth()) * 3 + 1];
-		uncompressedBuffer[(x + y * potWidth) * 4 + 2] = image->GetData()[(x + y * image->GetWidth()) * 3 + 2];
-		uncompressedBuffer[(x + y * potWidth) * 4 + 3] = image->GetAlpha()[x + y * image->GetWidth()];
-	    }
-	}
-    } else {
-	uncompressedBuffer = new GLbyte[potHeight * potWidth * 3];
-	for (int x = 0; x < image->GetWidth(); x++) {
-	    for (int y = 0; y < image->GetHeight(); y++) {
-		uncompressedBuffer[(x + y * potWidth) * 3 + 0] = image->GetData()[(x + y * image->GetWidth()) * 3 + 0];
-		uncompressedBuffer[(x + y * potWidth) * 3 + 1] = image->GetData()[(x + y * image->GetWidth()) * 3 + 1];
-		uncompressedBuffer[(x + y * potWidth) * 3 + 2] = image->GetData()[(x + y * image->GetWidth()) * 3 + 2];
-	    }
-	}
-    }
+    bool mipmap = image->HasOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS) && 
+	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
+    mipmap = true;
 
-    GLbyte *compressedBuffer;
     {
 	SubtleOpenGLContext glContext;
 
-	glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
-
-	GLenum internalFormat;
+	DDSURFACEDESC2 ddsd;
+	memset(&ddsd, 0, sizeof(ddsd));
+	ddsd.dwSize = 124;
+	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_LINEARSIZE | DDSD_PIXELFORMAT;
+	ddsd.dwHeight = image->GetHeight();
+	ddsd.dwWidth = image->GetWidth();
 	if (image->HasAlpha()) {
-	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
+	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
 	} else {
-	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
+	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
 	}
-
-	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, potWidth, potHeight, 0, image->HasAlpha() ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, uncompressedBuffer);
-
-	if (image->HasAlpha()) {
-	    compressedBuffer = new GLbyte[potWidth / 4 * potHeight / 4 * 16];
-	} else {
-	    compressedBuffer = new GLbyte[potWidth / 4 * potHeight / 4 * 8];
-	}
-
-	glGetCompressedTexImage(GL_TEXTURE_2D, 0, compressedBuffer);
-
-    }
-
-    DDSURFACEDESC2 ddsd;
-    memset(&ddsd, 0, sizeof(ddsd));
-    ddsd.dwSize = 124;
-    ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_LINEARSIZE | DDSD_PIXELFORMAT;
-    ddsd.dwHeight = image->GetHeight();
-    ddsd.dwWidth = image->GetWidth();
-    if (image->HasAlpha()) {
-	ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
-    } else {
-	ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
-    }
-
-    ddsd.ddpfPixelFormat.dwSize = 32;
-    ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
-    
-    int bpp;
-    if (image->HasAlpha()) {
-	ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
-	bpp = 8;
-    } else {
-	ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
-	bpp = 4;
-    }
-
-    ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
-
-    WriteHeader(stream, ddsd);
-    for (int row = 0; row < image->GetHeight() / 4; row++)
-    {
-	stream.Write(&compressedBuffer[row * potWidth / 4 * bpp * 2], image->GetWidth() / 4 * bpp * 2);
-    }
 	
+	if (mipmap) {
+	    ddsd.dwMipMapCount = NumMipmaps(image);
+	    ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
+	}
 
-    delete[] uncompressedBuffer;
+	ddsd.ddpfPixelFormat.dwSize = 32;
+	ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+
+	ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
+	if (mipmap) ddsd.ddsCaps.dwCaps1 |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
+	
+	WriteHeader(stream, ddsd);
+	wxImage minImage = *image;
+	
+	for (int level = 0; level < ((mipmap) ? ddsd.dwMipMapCount : 1); level++) {
+	    if (image->HasAlpha()) {
+		WriteDXT5(minImage, stream);
+	    } else {
+		WriteDXT1(minImage, stream);
+	    }
+	    minImage = Minify(minImage);
+	}
+
+    }
+}
+
+int wxDDSHandler::NumMipmaps(const wxImage &image)
+{
+    return (1 + (int) floor(log(MAX(image.GetWidth(), image.GetHeight())) / log(2)));
+}
+
+void wxDDSHandler::WriteDXT1(const wxImage& image, wxOutputStream& stream)
+{
+    int potWidth = NextPowerOfTwo(image.GetWidth());
+    int potHeight = NextPowerOfTwo(image.GetHeight());
+
+    wxImage potImage = image.Size(wxSize(potWidth, potHeight), wxPoint(0, 0), 0, 0, 0);
+    glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, potWidth, potHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, potImage.GetData());
+    
+    vector<GLbyte> compressedBuffer(MAX(potWidth / 4, 1) * MAX(potHeight / 4, 1) * 8);
+    glGetCompressedTexImage(GL_TEXTURE_2D, 0, &compressedBuffer.front());
+
+    for (int row = 0; row < (image.GetHeight() + 3 & ~3) / 4; row++) {
+	stream.Write(&compressedBuffer[row * potWidth / 4 * 8], (image.GetWidth() + 3 & ~3) / 4 * 8);
+    }
+}
+
+void wxDDSHandler::WriteDXT5(const wxImage& image, wxOutputStream& stream)
+{
+    int potWidth = NextPowerOfTwo(image.GetWidth());
+    int potHeight = NextPowerOfTwo(image.GetHeight());
+
+    vector<GLbyte> uncompressedBuffer(potWidth * potHeight * 4);
+    for (int x = 0; x < image.GetWidth(); x++) {
+	for (int y = 0; y < image.GetHeight(); y++) {
+	    uncompressedBuffer[(x + y * potWidth) * 4 + 0] = image.GetRed(x, y);
+	    uncompressedBuffer[(x + y * potWidth) * 4 + 1] = image.GetGreen(x, y);
+	    uncompressedBuffer[(x + y * potWidth) * 4 + 2] = image.GetBlue(x, y);
+	    uncompressedBuffer[(x + y * potWidth) * 4 + 3] = image.HasAlpha() ? image.GetAlpha(x, y) : 0xff;
+	}
+    }
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, potWidth, potHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &uncompressedBuffer.front());
+
+    vector<GLbyte> compressedBuffer(MAX(potWidth / 4, 1) * MAX(potHeight / 4, 1) * 16);
+     glGetCompressedTexImage(GL_TEXTURE_2D, 0, &compressedBuffer.front());
+
+     for (int row = 0; row < (image.GetHeight() + 3 & ~3) / 4; row++) {
+	 stream.Write(&compressedBuffer[row * potWidth / 4 * 16], (image.GetWidth() + 3 & ~3) / 4 * 16);
+    }
+}
+
+wxImage wxDDSHandler::Minify(wxImage &image)
+{
+    wxImage minifiedImage;
+    minifiedImage.Create(MAX(image.GetWidth() >> 1, 1), MAX(image.GetHeight() >> 1, 1));
+
+    gluScaleImage(GL_RGB, image.GetWidth(), image.GetHeight(), GL_UNSIGNED_BYTE, image.GetData(), minifiedImage.GetWidth(), minifiedImage.GetHeight(), GL_UNSIGNED_BYTE, minifiedImage.GetData());
+    
+    if (image.HasAlpha()) {
+	minifiedImage.InitAlpha();
+	gluScaleImage(GL_ALPHA, image.GetWidth(), image.GetHeight(), GL_UNSIGNED_BYTE, image.GetAlpha(), minifiedImage.GetWidth(), minifiedImage.GetHeight(), GL_UNSIGNED_BYTE, minifiedImage.GetAlpha());
+    }
+
+    return minifiedImage;
+
 }

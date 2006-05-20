@@ -11,6 +11,9 @@
 
 #include "wx/image.h"
 
+#define wxIMAGE_OPTION_DDS_USE_MIPMAPS wxT("DdsMipmap")
+
+
 #ifndef __DDRAW_INCLUDED__
 
 #define DDSD_CAPS          0x00000001
@@ -18,8 +21,8 @@
 #define DDSD_WIDTH         0x00000004
 #define DDSD_PITCH         0x00000008
 #define DDSD_PIXELFORMAT   0x00001000
-#define DDSD_MIPMAPCOUNT   0x00002000
-#define DDSD_LINEARSIZE    0x00008000
+#define DDSD_MIPMAPCOUNT   0x00020000
+#define DDSD_LINEARSIZE    0x00080000
 #define DDSD_DEPTH         0x00800000
 
 #define DDPF_ALPHAPIXELS   0x00000001
@@ -86,6 +89,14 @@ public:
 private:
     bool ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd);
     bool WriteHeader(wxOutputStream& stream, DDSURFACEDESC2 &ddsd);
+
+    // number of mipmap levels, including the first one
+    int NumMipmaps(const wxImage& image);
+
+    // these functions assume an OpenGL context
+    void WriteDXT1(const wxImage& image, wxOutputStream& stream);
+    void WriteDXT5(const wxImage& image, wxOutputStream& stream);
+    wxImage Minify(wxImage& image);
 #endif
     
 };
