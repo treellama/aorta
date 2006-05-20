@@ -80,11 +80,12 @@ public:
 	    m_type = wxBITMAP_TYPE_DDS;
 	}
 #if wxUSE_STREAMS
-    virtual bool SaveFile ( wxImage *image, wxOutputStream& stream, bool verbose=true ) { return FALSE; }
+    virtual bool SaveFile ( wxImage *image, wxOutputStream& stream, bool verbose=true );
     virtual bool LoadFile ( wxImage *image, wxInputStream& stream, bool verbose=true, int index=-1);
     virtual bool DoCanRead( wxInputStream& stream );
 private:
     bool ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd);
+    bool WriteHeader(wxOutputStream& stream, DDSURFACEDESC2 &ddsd);
 #endif
     
 };
