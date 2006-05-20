@@ -215,8 +215,8 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	wxFileDialog *saveFileDialog = new wxFileDialog(this,
 												   _("Save As"),
 												   _(""),
-												   _("untitled.png"),
-												   _("PNG files (*.png)|*.png"),
+												   _("untitled.dds"),
+												   _("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
 												   wxSAVE | wxOVERWRITE_PROMPT,
 												   wxDefaultPosition);
 	if (saveFileDialog->ShowModal() == wxID_OK)
@@ -233,7 +233,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 				exit(0);
 			}
 		}
-		saveImage.SaveFile(saveFileDialog->GetPath(), wxBITMAP_TYPE_PNG);
+		saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
 	}
 												   
 }

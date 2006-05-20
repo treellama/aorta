@@ -6,6 +6,9 @@
 // Licence:     wxWindows license
 /////////////////////////////////////////////////////////////////////////////
 
+// currently this file has some Aleph One specializations; some formats are
+// ignored or treated differently...caveat emptor
+
 #include "imagdds.h"
 
 #include <wx/wxprec.h>
@@ -77,6 +80,34 @@ bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)
     
 }
 
+bool wxDDSHandler::WriteHeader(wxOutputStream &stream, DDSURFACEDESC2 &ddsd)
+{
+    wxUint32 dwMagic = (wxINT32_SWAP_ON_BE(MAKE_FOURCC('D', 'D', 'S', ' ')));
+    stream.Write(&dwMagic, sizeof(dwMagic));
+
+    ddsd.dwSize = wxINT32_SWAP_ON_BE(ddsd.dwSize);
+    ddsd.dwFlags = wxINT32_SWAP_ON_BE(ddsd.dwFlags);
+    ddsd.dwHeight = wxINT32_SWAP_ON_BE(ddsd.dwHeight);
+    ddsd.dwWidth = wxINT32_SWAP_ON_BE(ddsd.dwWidth);
+    ddsd.dwPitchOrLinearSize = wxINT32_SWAP_ON_BE(ddsd.dwPitchOrLinearSize);
+    ddsd.dwDepth = wxINT32_SWAP_ON_BE(ddsd.dwDepth);
+    ddsd.dwMipMapCount = wxINT32_SWAP_ON_BE(ddsd.dwMipMapCount);
+    
+    ddsd.ddpfPixelFormat.dwSize = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwSize);
+    ddsd.ddpfPixelFormat.dwFlags = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFlags);
+    ddsd.ddpfPixelFormat.dwFourCC = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFourCC);
+    ddsd.ddpfPixelFormat.dwRGBBitCount = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBBitCount);
+    ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwGBitMask);
+    ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwBBitMask);
+    ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBAlphaBitMask);
+    
+    ddsd.ddsCaps.dwCaps1 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps1);
+    ddsd.ddsCaps.dwCaps2 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps2);
+
+    stream.Write(&ddsd, sizeof(ddsd));
+    return TRUE;
+}
+
 bool wxDDSHandler::DoCanRead(wxInputStream& stream)
 {
     wxUint32 dwMagic;
@@ -119,7 +150,7 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     if (!ReadHeader(stream, ddsd)) return FALSE;
     
     // just read the first mipmap
-    GLint internalFormat = GL_NONE;
+    GLenum internalFormat = GL_NONE;
     if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
 	if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1'))
 	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -195,4 +226,95 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 
     delete[] compressedBuffer;
     return TRUE;
+}
+
+bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose)
+{
+    if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {
+	image->Rescale((image->GetWidth() + 3) & ~3, (image->GetHeight() + 3) & ~3);
+    }
+    int potHeight = NextPowerOfTwo(image->GetHeight());
+    int potWidth = NextPowerOfTwo(image->GetWidth());
+
+    GLbyte *uncompressedBuffer;
+    if (image->HasAlpha()) {
+	uncompressedBuffer = new GLbyte[potHeight * potWidth * 4];
+	for (int x = 0; x < image->GetWidth(); x++) {
+	    for (int y = 0; y < image->GetHeight(); y++) {
+		uncompressedBuffer[(x + y * potWidth) * 4 + 0] = image->GetData()[(x + y * image->GetWidth()) * 3 + 0];
+		uncompressedBuffer[(x + y * potWidth) * 4 + 1] = image->GetData()[(x + y * image->GetWidth()) * 3 + 1];
+		uncompressedBuffer[(x + y * potWidth) * 4 + 2] = image->GetData()[(x + y * image->GetWidth()) * 3 + 2];
+		uncompressedBuffer[(x + y * potWidth) * 4 + 3] = image->GetAlpha()[x + y * image->GetWidth()];
+	    }
+	}
+    } else {
+	uncompressedBuffer = new GLbyte[potHeight * potWidth * 3];
+	for (int x = 0; x < image->GetWidth(); x++) {
+	    for (int y = 0; y < image->GetHeight(); y++) {
+		uncompressedBuffer[(x + y * potWidth) * 3 + 0] = image->GetData()[(x + y * image->GetWidth()) * 3 + 0];
+		uncompressedBuffer[(x + y * potWidth) * 3 + 1] = image->GetData()[(x + y * image->GetWidth()) * 3 + 1];
+		uncompressedBuffer[(x + y * potWidth) * 3 + 2] = image->GetData()[(x + y * image->GetWidth()) * 3 + 2];
+	    }
+	}
+    }
+
+    GLbyte *compressedBuffer;
+    {
+	SubtleOpenGLContext glContext;
+
+	glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
+
+	GLenum internalFormat;
+	if (image->HasAlpha()) {
+	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	} else {
+	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	}
+
+	glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, potWidth, potHeight, 0, image->HasAlpha() ? GL_RGBA : GL_RGB, GL_UNSIGNED_BYTE, uncompressedBuffer);
+
+	if (image->HasAlpha()) {
+	    compressedBuffer = new GLbyte[potWidth / 4 * potHeight / 4 * 16];
+	} else {
+	    compressedBuffer = new GLbyte[potWidth / 4 * potHeight / 4 * 8];
+	}
+
+	glGetCompressedTexImage(GL_TEXTURE_2D, 0, compressedBuffer);
+
+    }
+
+    DDSURFACEDESC2 ddsd;
+    memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = 124;
+    ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_LINEARSIZE | DDSD_PIXELFORMAT;
+    ddsd.dwHeight = image->GetHeight();
+    ddsd.dwWidth = image->GetWidth();
+    if (image->HasAlpha()) {
+	ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
+    } else {
+	ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
+    }
+
+    ddsd.ddpfPixelFormat.dwSize = 32;
+    ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+    
+    int bpp;
+    if (image->HasAlpha()) {
+	ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
+	bpp = 8;
+    } else {
+	ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
+	bpp = 4;
+    }
+
+    ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
+
+    WriteHeader(stream, ddsd);
+    for (int row = 0; row < image->GetHeight() / 4; row++)
+    {
+	stream.Write(&compressedBuffer[row * potWidth / 4 * bpp * 2], image->GetWidth() / 4 * bpp * 2);
+    }
+	
+
+    delete[] uncompressedBuffer;
 }
