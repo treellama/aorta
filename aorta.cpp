@@ -64,6 +64,11 @@ void MainFrame::OnExit(wxCommandEvent& event)
 	Close(TRUE);
 }
 
+void MainFrame::OnAbout(wxCommandEvent& event)
+{
+    wxMessageBox(_T("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), _T("About Aorta"), wxOK);
+}
+
 BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
 : wxNotebookPage(parent, id, pos, size)
 {
@@ -124,7 +129,7 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 													 _(""),
 													 _(""),
 													 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
-													 wxOPEN,
+													 wxOPEN | wxCHANGE_DIR,
 													 wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
 	{
@@ -160,11 +165,11 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 void BasicPage::OnLoadMask(wxCommandEvent &)
 {
 	wxFileDialog *openFileDialog = new wxFileDialog(this,
-													_("Choose Mask"),
-													_(""),
-													_(""),
-													_("Image Files ") + wxImage::GetImageExtWildcard(),
-													wxOPEN,
+													_T("Choose Mask"),
+													_T(""),
+													_T(""),
+													_T("Image Files ") + wxImage::GetImageExtWildcard(),
+													wxOPEN | wxCHANGE_DIR,
 													wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
 	{
@@ -211,31 +216,47 @@ void BasicPage::OnOpacTypeThree(wxCommandEvent &)
 
 void BasicPage::OnSaveAs(wxCommandEvent &)
 {
-	if (!normalImage.Ok()) return;
-	wxFileDialog *saveFileDialog = new wxFileDialog(this,
-												   _("Save As"),
-												   _(""),
-												   _("untitled.dds"),
-												   _("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
-												   wxSAVE | wxOVERWRITE_PROMPT,
-												   wxDefaultPosition);
-	if (saveFileDialog->ShowModal() == wxID_OK)
+    if (!normalImage.Ok()) return;
+    wxFileDialog *saveFileDialog = new wxFileDialog(this,
+						    _T("Save As"),
+						    _T(""),
+						    _T("untitled.dds"),
+						    _T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
+						    wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
+						    wxDefaultPosition);
+    if (saveFileDialog->ShowModal() != wxID_OK) return;
+    
+    wxImageExt saveImage = normalImage;
+    if (maskImage.Ok())
+    {
+	maskImage.ToAlpha(saveImage);
+//			saveImage.PrepareForMipmaps();
+    }
+    else
+    {
+	if (saveImage.HasAlpha())
 	{
-		wxImageExt saveImage = normalImage;
-		if (maskImage.Ok())
-		{
-			maskImage.ToAlpha(saveImage);
-		}
-		else
-		{
-			if (saveImage.HasAlpha())
-			{
-				exit(0);
-			}
-		}
-		saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
+	    exit(0);
 	}
-												   
+    }
+
+    if (saveFileDialog->GetFilename().AfterLast('.').MakeLower() == _T("png")) {
+	saveImage.SaveFile(saveFileDialog->GetPath(), wxBITMAP_TYPE_PNG);
+    } else {
+	// query for a preset
+	DDSOptionsDialog ddsOptions;
+	if (ddsOptions.ShowModal() != wxID_OK) return;
+
+	if (ddsOptions.removeHalos->GetValue()) {
+	    saveImage.PrepareForMipmaps();
+	}
+
+	if (ddsOptions.generateMipmaps->GetValue()) {
+	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+	}
+	
+	saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
+    }
 }
 
 void BasicPage::SetMaskButtonEnablement(bool enabled)
@@ -305,4 +326,32 @@ void BasicPage::UpdateMaskDisplay()
 	maskImageDisplay.PropRescale(width, height);
 	maskImageStatic->SetBitmap(wxBitmap(maskImageDisplay));
 	
+}
+
+DDSOptionsDialog::DDSOptionsDialog()
+    : wxDialog(NULL, -1, _T("DDS Options"))
+{
+    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+
+    generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
+    generateMipmaps->SetValue(1);
+    topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    
+    removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
+    topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+    wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+    wxButton *cancelButton = new wxButton(this, wxID_CANCEL);
+    buttonSizer->Add(cancelButton, 1, wxEXPAND | wxALL, 10);
+    wxButton *okButton = new wxButton(this, wxID_OK);
+    okButton->SetDefault();
+    buttonSizer->Add(okButton, 1, wxEXPAND | wxALL, 10);
+
+    topSizer->Add(buttonSizer, 1, wxEXPAND);
+
+
+    SetAutoLayout(TRUE);
+    SetSizer(topSizer);
+    topSizer->Fit(this);
+    topSizer->SetSizeHints(this);
+
 }
