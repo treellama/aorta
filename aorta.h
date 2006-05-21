@@ -47,16 +47,22 @@ public:
 	virtual bool OnInit(); 
 };
 
+class BasicPage;
+
 class MainFrame: public wxFrame // MainFrame is the class for our window, 
 { 
 	// It contains the window and all objects in it 
 public: 
 	MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style); 
 	wxNotebook *notebook;
+	BasicPage *basicPage;
 	wxMenuBar *menuBar;
 	wxMenu *fileMenu;
 	void OnExit(wxCommandEvent& event);
 	void OnAbout(wxCommandEvent &);
+	void OnLoadNormal(wxCommandEvent &);
+	void OnLoadMask(wxCommandEvent &);
+	void OnSaveAs(wxCommandEvent &);
 
 	DECLARE_EVENT_TABLE()
 
@@ -109,8 +115,8 @@ public:
 
 enum
 {
-	AORTA_EXIT = wxID_HIGHEST + 1,
-	AORTA_ABOUT,
+	MENU_LoadNormal = wxID_HIGHEST + 1,
+	MENU_SaveAs,
 	BUTTON_NormalImage,
 	BUTTON_MaskImage,
 	BUTTON_ClearMask,
@@ -120,8 +126,10 @@ enum
 };
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(AORTA_EXIT, MainFrame::OnExit)
-EVT_MENU(AORTA_ABOUT, MainFrame::OnAbout)
+EVT_MENU(wxID_EXIT, MainFrame::OnExit)
+EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
+EVT_MENU(MENU_LoadNormal, MainFrame::OnLoadNormal)
+EVT_MENU(MENU_SaveAs, MainFrame::OnSaveAs)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)

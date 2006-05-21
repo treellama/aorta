@@ -218,17 +218,17 @@
 				INFOPLIST_FILE = "Aorta-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_CFLAGS = (
-					"-I/usr/lib/wx/include/mac-unicode-debug-2.5",
-					"-I/usr/include/wx-2.5",
-					"-D__WXDEBUG__",
+					"-I/usr/local/lib/wx/include/mac-ansi-release-static-2.6",
+					"-I/usr/local/include/wx-2.6",
 					"-D__WXMAC__",
 					"-D_FILE_OFFSET_BITS=64",
 					"-D_LARGE_FILES",
 					"-DNO_GCC_PRAGMA",
 				);
 				OTHER_LDFLAGS = (
-					"-framework",
-					Carbon,
+					"-L/usr/local/lib",
+					"-isysroot",
+					/Developer/SDKs/MacOSX10.4u.sdk,
 					"-framework",
 					QuickTime,
 					"-framework",
@@ -239,7 +239,28 @@
 					Cocoa,
 					"-framework",
 					System,
-					"-lwx_macud-2.5",
+					"/usr/local/lib/libwx_mac_gl-2.6.a",
+					"/usr/local/lib/libwx_mac_xrc-2.6.a",
+					"/usr/local/lib/libwx_mac_qa-2.6.a",
+					"/usr/local/lib/libwx_mac_html-2.6.a",
+					"/usr/local/lib/libwx_mac_adv-2.6.a",
+					"/usr/local/lib/libwx_mac_core-2.6.a",
+					"/usr/local/lib/libwx_base_carbon_xml-2.6.a",
+					"/usr/local/lib/libwx_base_carbon_net-2.6.a",
+					"/usr/local/lib/libwx_base_carbon-2.6.a",
+					"-framework",
+					OpenGL,
+					"-framework",
+					AGL,
+					"-framework",
+					WebKit,
+					"-lwxexpat-2.6",
+					"-lwxtiff-2.6",
+					"-lwxjpeg-2.6",
+					"-lwxpng-2.6",
+					"-lz",
+					"-lpthread",
+					"-liconv",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Aorta;
