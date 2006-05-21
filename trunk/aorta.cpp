@@ -38,9 +38,11 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 : wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
 { 
 	fileMenu = new wxMenu;
-	fileMenu->Append(AORTA_ABOUT, _T("&About Aorta..."));
+	fileMenu->Append(wxID_ABOUT, _T("&About Aorta..."));
 	fileMenu->AppendSeparator();
-	fileMenu->Append(AORTA_EXIT, _T("&Quit"));
+	fileMenu->Append(MENU_LoadNormal, _T("L&oad image..."));
+	fileMenu->Append(MENU_SaveAs, _T("&Save as..."));
+	fileMenu->Append(wxID_EXIT, _T("&Quit"));
 
 	menuBar = new wxMenuBar;
 	menuBar->Append(fileMenu, _T("&File"));
@@ -50,7 +52,7 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 	notebook = new wxNotebook(this, -1);
 	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	
-	BasicPage *basicPage = new BasicPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
+	basicPage = new BasicPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
 	notebook->AddPage(basicPage, _("Basic"), true);
 	
 	SetAutoLayout(TRUE);
@@ -67,6 +69,21 @@ void MainFrame::OnExit(wxCommandEvent& event)
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
     wxMessageBox(_T("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), _T("About Aorta"), wxOK);
+}
+
+void MainFrame::OnLoadNormal(wxCommandEvent& event)
+{
+	basicPage->OnLoadNormal(event);
+}
+
+void MainFrame::OnSaveAs(wxCommandEvent& event)
+{
+	basicPage->OnSaveAs(event);
+}
+
+void MainFrame::OnLoadMask(wxCommandEvent& event)
+{
+	basicPage->OnLoadMask(event);
 }
 
 BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
@@ -329,7 +346,7 @@ void BasicPage::UpdateMaskDisplay()
 }
 
 DDSOptionsDialog::DDSOptionsDialog()
-    : wxDialog(NULL, -1, _T("DDS Options"))
+    : wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
 {
     wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
 

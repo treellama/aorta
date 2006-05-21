@@ -22,6 +22,10 @@
 #include <wx/glcanvas.h>
 #endif
 
+#ifdef __APPLE__
+#include <OpenGL/glu.h>
+#endif
+
 #include "math.h"
 #include <vector>
 using namespace std;
