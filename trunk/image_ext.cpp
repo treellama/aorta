@@ -126,3 +126,110 @@ void wxImageExt::MakeOpacTypeThree()
 	*this = image;
 }
 
+// thanks to the Virtual Terrain Project for this algorithm, and the code looks
+// pretty similar too...
+void wxImageExt::PrepareForMipmaps()
+{
+    if (!HasAlpha()) return;
+    wxBusyCursor();
+    short bgBlue, bgGreen, bgRed;
+    bgBlue = bgGreen = bgRed = 0xff;
+    // restore the color of edge texels by guessing correct non-background color
+    wxImageExt result;
+
+    int numBackgroundPixels = 0;
+
+    result.Create(GetWidth(), GetHeight());
+    result.InitAlpha();
+    for (int x = 0; x < GetWidth(); x++) {
+	for (int y = 0; y < GetHeight(); y++) {
+	    if (GetAlpha(x, y) == 0) {
+		result.SetAlpha(x, y, 0);
+		result.SetRGB(x, y, bgRed, bgGreen, bgBlue);
+		numBackgroundPixels++;
+	    } else if (GetAlpha(x, y) == 0xff) {
+		result.SetAlpha(x, y, 0xff);
+		result.SetRGB(x, y, GetRed(x, y), GetGreen(x, y), GetBlue(x, y));
+	    } else {
+		float blend_factor = GetAlpha(x, y) / 255.0f;
+		result.SetAlpha(x, y, GetAlpha(x, y));
+		short rDiff = GetRed(x, y) - bgRed;
+		short gDiff = GetGreen(x, y) - bgGreen;
+		short bDiff = GetBlue(x, y) - bgBlue;
+		
+		result.SetRGB(x, y, PIN(bgRed + (int) (rDiff * (1.0f / blend_factor)), 0, 255), PIN(bgGreen + (int) (gDiff * (1.0f / blend_factor)), 0, 255), PIN(bgBlue + (int) (bDiff * (1.0f / blend_factor)), 0, 255));
+	    }
+	}
+    }
+
+    wxProgressDialog pd(_T("Processing"), _T("Processing background pixels"), numBackgroundPixels, NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME);
+
+    wxImageExt tempImage;
+    tempImage.Create(GetWidth(), GetHeight());
+    tempImage.InitAlpha();
+    int filled_in = 1;
+    while (filled_in) {
+	filled_in = 0;
+	int numBackgroundPixelsRemaining = 0;
+	tempImage.Create(GetWidth(), GetHeight(), true);
+	
+	short rSum, gSum, bSum, aSum;
+	int surround;
+	for (int i = 0; i < GetWidth(); i++) {
+	    for (int j = 0; j < GetHeight(); j++) {
+		if (result.GetAlpha(i, j) != 0)
+		    continue;
+
+		numBackgroundPixelsRemaining++;
+		rSum = gSum = bSum = aSum = 0;
+		surround = 0;
+		for (int x = -1; x <= 1; x++)
+		    for (int y = -1; y <= 1; y++) {
+			if (x == 0 && y == 0) continue;
+			if (i + x < 0) continue;
+			if (i + x > GetWidth() - 1) continue;
+			if (j + y < 0) continue;
+			if (j + y > GetHeight() - 1) continue;
+			if (result.GetAlpha(i + x, j + y) != 0) {
+			    rSum += result.GetRed(i + x, j + y);
+			    gSum += result.GetGreen(i + x, j + y);
+			    bSum += result.GetBlue(i + x, j + y);
+			    aSum += result.GetAlpha(i + x, j + y);
+			    surround++;
+			}
+		    }
+		
+		if (surround > 2)
+		{
+		    tempImage.SetRGB(i, j, rSum / surround, gSum / surround, bSum / surround);
+		    tempImage.SetAlpha(i, j, aSum / surround);
+		}
+	    }
+	}
+
+	for (int i = 0; i < GetWidth(); i++)
+	{
+	    for (int j = 0; j < GetHeight(); j++)
+	    {
+		if (result.GetAlpha(i, j) == 0) {
+		    if (tempImage.GetRed(i, j) != 0 || tempImage.GetGreen(i, j) != 0 || tempImage.GetBlue(i, j) != 0) {
+			result.SetRGB(i, j, tempImage.GetRed(i, j), tempImage.GetGreen(i, j), tempImage.GetBlue(i, j));
+			result.SetAlpha(i, j, 1);
+			filled_in++;
+		    }
+		}
+	    }
+	}
+	pd.Update(numBackgroundPixels - numBackgroundPixelsRemaining);
+    }
+
+    pd.Update(numBackgroundPixels);
+
+    for (int i = 0; i < GetWidth(); i++) {
+	for (int j = 0; j < GetHeight(); j++) {
+	    if (result.GetAlpha(i, j) == 1) result.SetAlpha(i, j, 0);
+	}
+    }
+
+    *this = result;
+}

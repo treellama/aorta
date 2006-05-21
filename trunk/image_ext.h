@@ -26,9 +26,19 @@
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
 #include <wx/image.h>
+#include <wx/progdlg.h>
 #endif
 
+#ifndef MAX
 #define MAX(x, y) (y < x ? x : y)
+#endif
+#ifndef MIN
+#define MIN(a,b) ((a)<=(b) ? (a) : (b))
+#endif
+#define FLOOR(value,floor) MAX(value,floor)
+#define CEILING(value,ceiling) MIN(value,ceiling)
+
+#define PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
 
 class wxImageExt : public wxImage
 {
@@ -45,6 +55,8 @@ public:
 	void ToAlpha(wxImageExt& dest) const; // export our grayscale representation to the dest's alpha channel
 	void MakeOpacTypeTwo();
 	void MakeOpacTypeThree();
+
+	void PrepareForMipmaps();
 };
 
 #endif

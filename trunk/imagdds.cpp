@@ -241,13 +241,12 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 
 bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose)
 {
+    bool mipmap = image->HasOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS) && 
+	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
+
     if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {
 	image->Rescale((image->GetWidth() + 3) & ~3, (image->GetHeight() + 3) & ~3);
     }
-
-    bool mipmap = image->HasOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS) && 
-	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
-    mipmap = true;
 
     {
 	SubtleOpenGLContext glContext;

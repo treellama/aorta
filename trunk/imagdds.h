@@ -12,7 +12,7 @@
 #include "wx/image.h"
 
 #define wxIMAGE_OPTION_DDS_USE_MIPMAPS wxT("DdsMipmap")
-
+#define wxIMAGE_OPTION_DDS_FORMAT wxT("DdsFormat")
 
 #ifndef __DDRAW_INCLUDED__
 

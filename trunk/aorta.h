@@ -25,8 +25,10 @@
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP 
 #include <wx/wx.h>
+#include <wx/checkbox.h>
 #include <wx/image.h>
 #include <wx/notebook.h>
+#include <wx/radiobox.h>
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/statline.h>
@@ -54,7 +56,7 @@ public:
 	wxMenuBar *menuBar;
 	wxMenu *fileMenu;
 	void OnExit(wxCommandEvent& event);
-	void OnAbout(wxCommandEvent &) { }
+	void OnAbout(wxCommandEvent &);
 
 	DECLARE_EVENT_TABLE()
 
@@ -94,6 +96,15 @@ private:
 	wxStaticBitmap *maskImageStatic;
 	
 	wxButton *saveAsButton;
+};
+
+class DDSOptionsDialog : public wxDialog
+{
+public:
+	DDSOptionsDialog();
+
+	wxCheckBox *generateMipmaps;
+	wxCheckBox *removeHalos;
 };
 
 enum
