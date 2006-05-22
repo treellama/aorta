@@ -269,8 +269,10 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
 	}
 	
+	int mipmap_count;
+	
 	if (mipmap) {
-	    ddsd.dwMipMapCount = NumMipmaps(image);
+	    mipmap_count = ddsd.dwMipMapCount = NumMipmaps(image);
 	    ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
 	}
 
@@ -283,7 +285,7 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	WriteHeader(stream, ddsd);
 	wxImage minImage = *image;
 	
-	for (int level = 0; level < ((mipmap) ? ddsd.dwMipMapCount : 1); level++) {
+	for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
 	    if (image->HasAlpha()) {
 		WriteDXT5(minImage, stream);
 	    } else {
