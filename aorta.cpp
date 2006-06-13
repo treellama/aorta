@@ -263,6 +263,12 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	// query for a preset
 	DDSOptionsDialog ddsOptions;
 	if (ddsOptions.ShowModal() != wxID_OK) return;
+	
+	if (ddsOptions.reconstructColors->GetValue()) {
+		wxColour bg;
+		bg.Set(0xff, 0xff, 0xff);
+		saveImage.ReconstructColors(bg);
+	}
 
 	if (ddsOptions.removeHalos->GetValue()) {
 	    saveImage.PrepareForMipmaps();
@@ -346,13 +352,21 @@ void BasicPage::UpdateMaskDisplay()
 }
 
 DDSOptionsDialog::DDSOptionsDialog()
-    : wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
+: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
 {
-    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+	backgroundColor.Set(0xff, 0xff, 0xff);
+	
+	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
+	topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
 
     generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
     generateMipmaps->SetValue(1);
     topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	
+	reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
+	reconstructColors->SetValue(1);
+	topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
     
     removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
     topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
@@ -371,4 +385,16 @@ DDSOptionsDialog::DDSOptionsDialog()
     topSizer->Fit(this);
     topSizer->SetSizeHints(this);
 
+}
+
+void DDSOptionsDialog::OnChooseBackground(wxCommandEvent &)
+{
+	wxColourData data;
+	data.SetColour(backgroundColor);
+	wxColourDialog dialog(this, &data);
+	if (dialog.ShowModal() == wxID_OK)
+	{
+		wxColourData redData = dialog.GetColourData();
+		backgroundColor = redData.GetColour();
+	}
 }

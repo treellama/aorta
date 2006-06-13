@@ -56,6 +56,7 @@ public:
 	void MakeOpacTypeTwo();
 	void MakeOpacTypeThree();
 
+	void ReconstructColors(const wxColour&);
 	void PrepareForMipmaps();
 };
 

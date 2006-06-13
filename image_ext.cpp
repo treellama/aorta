@@ -126,42 +126,54 @@ void wxImageExt::MakeOpacTypeThree()
 	*this = image;
 }
 
-// thanks to the Virtual Terrain Project for this algorithm, and the code looks
+// thanks to the Virtual Terrain Project for these algorithms, and the code looks
 // pretty similar too...
+
+void wxImageExt::ReconstructColors(const wxColour& bgColor)
+{
+	// restore the color of edge texels by guessing correct non-background color
+    wxImageExt result;
+	
+    result.Create(GetWidth(), GetHeight());
+    result.InitAlpha();
+    for (int x = 0; x < GetWidth(); x++) {
+		for (int y = 0; y < GetHeight(); y++) {
+			if (GetAlpha(x, y) == 0) {
+				result.SetAlpha(x, y, 0);
+				result.SetRGB(x, y, bgColor.Red(), bgColor.Green(), bgColor.Blue());
+			} else if (GetAlpha(x, y) == 0xff) {
+				result.SetAlpha(x, y, 0xff);
+				result.SetRGB(x, y, GetRed(x, y), GetGreen(x, y), GetBlue(x, y));
+			} else {
+				float blend_factor = GetAlpha(x, y) / 255.0f;
+				result.SetAlpha(x, y, GetAlpha(x, y));
+				short rDiff = GetRed(x, y) - bgColor.Red();
+				short gDiff = GetGreen(x, y) - bgColor.Green();
+				short bDiff = GetBlue(x, y) - bgColor.Blue();
+				
+				result.SetRGB(x, y, PIN(bgColor.Red() + (int) (rDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Green() + (int) (gDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Blue() + (int) (bDiff * (1.0f / blend_factor)), 0, 255));
+			}
+		}
+    }
+	
+	*this = result;
+}
+
 void wxImageExt::PrepareForMipmaps()
 {
     if (!HasAlpha()) return;
     wxBusyCursor();
-    short bgBlue, bgGreen, bgRed;
-    bgBlue = bgGreen = bgRed = 0xff;
-    // restore the color of edge texels by guessing correct non-background color
-    wxImageExt result;
 
-    int numBackgroundPixels = 0;
-
-    result.Create(GetWidth(), GetHeight());
-    result.InitAlpha();
-    for (int x = 0; x < GetWidth(); x++) {
-	for (int y = 0; y < GetHeight(); y++) {
-	    if (GetAlpha(x, y) == 0) {
-		result.SetAlpha(x, y, 0);
-		result.SetRGB(x, y, bgRed, bgGreen, bgBlue);
-		numBackgroundPixels++;
-	    } else if (GetAlpha(x, y) == 0xff) {
-		result.SetAlpha(x, y, 0xff);
-		result.SetRGB(x, y, GetRed(x, y), GetGreen(x, y), GetBlue(x, y));
-	    } else {
-		float blend_factor = GetAlpha(x, y) / 255.0f;
-		result.SetAlpha(x, y, GetAlpha(x, y));
-		short rDiff = GetRed(x, y) - bgRed;
-		short gDiff = GetGreen(x, y) - bgGreen;
-		short bDiff = GetBlue(x, y) - bgBlue;
-		
-		result.SetRGB(x, y, PIN(bgRed + (int) (rDiff * (1.0f / blend_factor)), 0, 255), PIN(bgGreen + (int) (gDiff * (1.0f / blend_factor)), 0, 255), PIN(bgBlue + (int) (bDiff * (1.0f / blend_factor)), 0, 255));
-	    }
+	wxImageExt result  = *this;
+	// scan for background pixels
+	int numBackgroundPixels = 0;
+	for (int x = 0; x < GetWidth(); x++) {
+		for (int y = 0; y < GetWidth(); y++) {
+			if (GetAlpha(x, y) == 0) {
+				numBackgroundPixels++;
+			}
+		}
 	}
-    }
-
     wxProgressDialog pd(_T("Processing"), _T("Processing background pixels"), numBackgroundPixels, NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME);
 
     wxImageExt tempImage;

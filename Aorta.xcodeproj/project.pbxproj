@@ -331,6 +331,9 @@
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Aorta;
+				SEPARATE_STRIP = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
