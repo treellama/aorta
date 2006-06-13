@@ -26,6 +26,7 @@
 #ifndef WX_PRECOMP 
 #include <wx/wx.h>
 #include <wx/checkbox.h>
+#include <wx/colordlg.h>
 #include <wx/image.h>
 #include <wx/notebook.h>
 #include <wx/radiobox.h>
@@ -111,6 +112,14 @@ public:
 
 	wxCheckBox *generateMipmaps;
 	wxCheckBox *removeHalos;
+	wxCheckBox *reconstructColors;
+	
+	wxButton *chooseBackground;
+	wxColour backgroundColor;
+	
+	void OnChooseBackground(wxCommandEvent &);
+	
+	DECLARE_EVENT_TABLE()
 };
 
 enum
@@ -122,7 +131,8 @@ enum
 	BUTTON_ClearMask,
 	BUTTON_OpacTypeTwo,
 	BUTTON_OpacTypeThree,
-	BUTTON_SaveAs
+	BUTTON_SaveAs,
+	BUTTON_ChooseBackground
 };
 
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
@@ -140,6 +150,9 @@ EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
 EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
 EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
 END_EVENT_TABLE()
-	
+
+BEGIN_EVENT_TABLE(DDSOptionsDialog, wxDialog)
+EVT_BUTTON(BUTTON_ChooseBackground, DDSOptionsDialog::OnChooseBackground)
+END_EVENT_TABLE()
 
 #endif
