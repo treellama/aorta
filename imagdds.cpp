@@ -91,9 +91,6 @@ bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)
     ddsd.ddpfPixelFormat.dwFlags = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFlags);
     ddsd.ddpfPixelFormat.dwFourCC = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFourCC);
     ddsd.ddpfPixelFormat.dwRGBBitCount = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBBitCount);
-    ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwGBitMask);
-    ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwBBitMask);
-    ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBAlphaBitMask);
     
     ddsd.ddsCaps.dwCaps1 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps1);
     ddsd.ddsCaps.dwCaps2 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps2);
@@ -119,9 +116,6 @@ bool wxDDSHandler::WriteHeader(wxOutputStream &stream, DDSURFACEDESC2 &ddsd)
     ddsd.ddpfPixelFormat.dwFlags = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFlags);
     ddsd.ddpfPixelFormat.dwFourCC = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwFourCC);
     ddsd.ddpfPixelFormat.dwRGBBitCount = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBBitCount);
-    ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwGBitMask);
-    ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwBBitMask);
-    ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(ddsd.ddpfPixelFormat.dwRGBAlphaBitMask);
     
     ddsd.ddsCaps.dwCaps1 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps1);
     ddsd.ddsCaps.dwCaps2 = wxINT32_SWAP_ON_BE(ddsd.ddsCaps.dwCaps2);
@@ -148,8 +142,9 @@ bool wxDDSHandler::DoCanRead(wxInputStream& stream)
     if (ddsd.ddsCaps.dwCaps2 & DDSCAPS2_VOLUME) return FALSE;
     if (ddsd.ddsCaps.dwCaps2 & DDSCAPS2_CUBEMAP) return FALSE;
     
-    if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) 
-	return FALSE; // TBD
+    if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
+	return (ddsd.ddpfPixelFormat.dwRGBBitCount == 24 || ddsd.ddpfPixelFormat.dwRGBBitCount == 32);
+    }
     else if ((ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
 	     (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3') ||
@@ -180,13 +175,66 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '5'))
 	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+    } else if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
+	if (ddsd.ddpfPixelFormat.dwRGBBitCount == 24) {
+	    internalFormat = GL_RGB;
+	} else if (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) {
+	    internalFormat = GL_RGBA;
+	}
     }
     if (internalFormat == GL_NONE) return FALSE;
 
-    int bpp = (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ? 4 : 8;
     int width = ddsd.dwWidth;
     int height = ddsd.dwHeight;
 
+    if (internalFormat == GL_RGB || internalFormat == GL_RGBA) {
+	int pitch;
+	if (ddsd.dwFlags & DDSD_PITCH) {
+	    pitch = ddsd.dwPitchOrLinearSize;
+	} else {
+	    pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
+	}
+
+	if (pitch != ((internalFormat == GL_RGB) ? 3 : 4) * width)
+	{
+	    fprintf(stderr, "we don't know how to do weird pitch\n");
+	    return FALSE;
+	}
+
+	image->Create(width, height);
+	if (internalFormat == GL_RGBA) 
+	    image->InitAlpha();
+	for (int y = 0; y < height; y++) {
+	    for (int x = 0; x < width; x++) {
+		unsigned char b = stream.GetC();
+		if (stream.LastRead() != 1) {
+		    return FALSE;
+		}
+		unsigned char g = stream.GetC();
+		if (stream.LastRead() != 1) {
+		    return FALSE;
+		}
+		unsigned char r = stream.GetC();
+		if (stream.LastRead() != 1) {
+		    return FALSE;
+		}
+
+		image->SetRGB(x, y, r, g, b);
+
+		if (internalFormat == GL_RGBA)
+		{
+		    image->SetAlpha(x, y, stream.GetC());
+		    if (stream.LastRead() != 1) {
+			return FALSE;
+		    }
+		}
+	    }
+	}
+    
+	return TRUE;
+    }
+    
+    int bpp = (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ? 4 : 8;
     int potWidth = NextPowerOfTwo(width);
     int potHeight = NextPowerOfTwo(height);
 
