@@ -406,25 +406,39 @@ void BasicPage::UpdateMaskDisplay()
 DDSOptionsDialog::DDSOptionsDialog()
     : wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
 {
+
+    wxConfig config;
     wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
     backgroundColor.Set(0xff, 0xff, 0xff);
 
     useDXTC = new wxCheckBox(this, -1, _T("Use DXTC"), wxDefaultPosition, wxDefaultSize);
-    useDXTC->SetValue(1);
+    bool value;
+    config.Read("Single/UseDXTC", &value, true);
+    useDXTC->SetValue(value ? 1 : 0);
     topSizer->Add(useDXTC, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
     
+    long r, g, b;
+    
+    config.Read("Single/BackgroundColor/R", &r, 0xff);
+    config.Read("Single/BackgroundColor/G", &g, 0xff);
+    config.Read("Single/BackgroundColor/B", &b, 0xff);
+    backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
     chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
     topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
     
+    config.Read("Single/GenerateMipmaps", &value, true);
     generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
-    generateMipmaps->SetValue(1);
+    generateMipmaps->SetValue(value ? 1 : 0);
     topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
     
+    config.Read("Single/ReconstructColors", &value, true);
     reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
-    reconstructColors->SetValue(1);
+    reconstructColors->SetValue(value ? 1 : 0);
     topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
     
+    config.Read("Single/RemoveHalos", &value, false);
     removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
+    removeHalos->SetValue(value ? 1 : 0);
     topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
     wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
     wxButton *cancelButton = new wxButton(this, wxID_CANCEL);
@@ -441,6 +455,20 @@ DDSOptionsDialog::DDSOptionsDialog()
     topSizer->Fit(this);
     topSizer->SetSizeHints(this);
 
+}
+
+bool DDSOptionsDialog::Validate()
+{
+	wxConfig config;
+	config.Write("Single/UseDXTC", useDXTC->GetValue() == 1);
+	config.Write("Single/GenerateMipmaps", generateMipmaps->GetValue() == 1);
+	config.Write("Single/ReconstructColors", reconstructColors->GetValue() == 1);
+	config.Write("Single/RemoveHalos", removeHalos->GetValue() == 1);
+	config.Write("Single/BackgroundColor/R", (long) backgroundColor.Red());
+	config.Write("Single/BackgroundColor/G", (long) backgroundColor.Green());
+	config.Write("Single/BackgroundColor/B", (long) backgroundColor.Blue());
+
+	return TRUE;
 }
 
 void DDSOptionsDialog::OnChooseBackground(wxCommandEvent &)

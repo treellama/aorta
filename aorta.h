@@ -27,6 +27,7 @@
 #include <wx/wx.h>
 #include <wx/checkbox.h>
 #include <wx/colordlg.h>
+#include <wx/config.h>
 #ifdef wxUSE_DRAG_AND_DROP
 #include <wx/dnd.h>
 #endif
@@ -162,6 +163,8 @@ public:
 	wxColour backgroundColor;
 	
 	void OnChooseBackground(wxCommandEvent &);
+private:
+	bool Validate();
 	
 	DECLARE_EVENT_TABLE()
 };
