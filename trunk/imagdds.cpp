@@ -368,12 +368,11 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 		} else {
 		    WriteDXT1(minImage, stream);
 		}
-		minImage = Minify(minImage);
 	    } else {
 		WriteRGBA(minImage, stream);
 	    }
+	    minImage = Minify(minImage);
 	}
-
     }
 }
 
