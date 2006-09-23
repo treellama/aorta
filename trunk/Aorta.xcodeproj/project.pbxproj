@@ -14,23 +14,6 @@
 		AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEFE01180A1979B700E99D09 /* imagdds.cpp */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildStyle section */
-		AEBF58190A1025C300C810B8 /* Development */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-			};
-			name = Development;
-		};
-		AEBF581A0A1025C300C810B8 /* Deployment */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = YES;
-			};
-			name = Deployment;
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXFileReference section */
 		AEBF58240A1025ED00C810B8 /* Aorta.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Aorta.icns; sourceTree = "<group>"; };
 		AEBF5B6B0A163E6300C810B8 /* image_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = image_ext.h; sourceTree = "<group>"; };
@@ -98,48 +81,11 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_MODEL_TUNING = G5;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Carbon.framework/Headers/Carbon.h";
-				INFOPLIST_FILE = "Aorta-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				OTHER_LDFLAGS = (
-					"-framework",
-					Carbon,
-				);
-				PREBINDING = NO;
-				PRODUCT_NAME = Aorta;
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = YES;
-			};
 			dependencies = (
 			);
 			name = Aorta;
 			productName = Aorta;
 			productReference = AED0D8D00A101D4800C61B65 /* Aorta.app */;
-			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
-<plist version=\"1.0\">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>English</string>
-	<key>CFBundleExecutable</key>
-	<string>${EXECUTABLE_NAME}</string>
-	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.Aorta</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>1.0</string>
-</dict>
-</plist>
-";
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -148,12 +94,6 @@
 		AED0D8B50A101C1500C61B65 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = AED0D8B60A101C1500C61B65 /* Build configuration list for PBXProject "Aorta" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				AEBF58190A1025C300C810B8 /* Development */,
-				AEBF581A0A1025C300C810B8 /* Deployment */,
-			);
 			hasScannedForEncodings = 0;
 			mainGroup = AED0D8B30A101C1500C61B65;
 			productRefGroup = AED0D8C70A101CBD00C61B65 /* Products */;
