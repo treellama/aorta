@@ -106,7 +106,7 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	wxBoxSizer *pageSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *column[2];
 	column[0] = new wxBoxSizer(wxVERTICAL);
-	
+
 	wxImageExt whiteImage(256, 256);
 	whiteImage.White();
 	
@@ -115,6 +115,10 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	normalImageStatic->SetDropTarget(new DnDNormalImage(this));
 #endif	
 	column[0]->Add(normalImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
+	normalImageFilename = new wxStaticText(this, -1, _T(""));
+	column[0]->Add(normalImageFilename, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT, 10);
+	normalImageSize = new wxStaticText(this, -1, _T(""));
+	column[0]->Add(normalImageSize, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	normalImageButton = new wxButton(this, BUTTON_NormalImage, _T("Load normal..."));
 	column[0]->Add(normalImageButton, 0, wxALIGN_CENTER | wxALL, 10);
 
@@ -127,6 +131,10 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	maskImageStatic->SetDropTarget(new DnDMask(this));
 #endif
 	column[1]->Add(maskImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
+
+	maskStatus = new wxStaticText(this, -1, _T(""));
+	column[1]->Add(maskStatus, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	column[1]->AddSpacer(maskStatus->GetRect().GetHeight());
 	
 	wxBoxSizer *loadClearSizer = new wxBoxSizer(wxHORIZONTAL);
 	maskImageButton = new wxButton(this, BUTTON_MaskImage, _T("Load mask..."));
@@ -216,7 +224,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
     wxFileDialog *saveFileDialog = new wxFileDialog(this,
 						    _T("Save As"),
 						    _T(""),
-						    _T("untitled.dds"),
+						    (normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
 						    _T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
 						    wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
 						    wxDefaultPosition);
@@ -285,6 +293,10 @@ void BasicPage::LoadNormal(const wxString& path)
 	    maskImage.Destroy();
 	}
 	
+	normalImageFilename->SetLabel(path.AfterLast('/'));
+	wxString dimensionsString;
+	dimensionsString.Printf("%ix%i", normalImage.GetWidth(), normalImage.GetHeight());
+	normalImageSize->SetLabel(dimensionsString);
 	UpdateNormalDisplay();
 	UpdateMaskDisplay();
     } 
@@ -372,16 +384,19 @@ void BasicPage::UpdateMaskDisplay()
 	if (maskImage.Ok())
 	{
 		maskImageDisplay = maskImage;
+		maskStatus->SetLabel(_T(""));
 	} 
 	else if (normalImage.Ok())
 	{
 		maskImageDisplay.Create(normalImage.GetWidth(), normalImage.GetHeight());
 		maskImageDisplay.White();
+		maskStatus->SetLabel(_T("No mask"));
 	}
 	else
 	{
 		maskImageDisplay.Create(width, height);
 		maskImageDisplay.White();
+		maskStatus->SetLabel(_T(""));
 	}
 	maskImageDisplay.PropRescale(width, height);
 	maskImageStatic->SetBitmap(wxBitmap(maskImageDisplay));

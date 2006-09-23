@@ -107,6 +107,8 @@ private:
 	wxImageExt normalImageDisplay;
 	wxButton *normalImageButton;
 	wxStaticBitmap *normalImageStatic;
+	wxStaticText *normalImageSize;
+	wxStaticText *normalImageFilename;
 	
 	wxImageExt maskImage;
 	wxImageExt maskImageDisplay;
@@ -115,6 +117,7 @@ private:
 	wxButton *opacTypeTwo;
 	wxButton *opacTypeThree;
 	wxStaticBitmap *maskImageStatic;
+	wxStaticText *maskStatus;
 	
 	wxButton *saveAsButton;
 };
