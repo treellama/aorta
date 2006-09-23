@@ -110,6 +110,8 @@ class DDSOptionsDialog : public wxDialog
 public:
 	DDSOptionsDialog();
 
+	wxCheckBox *useDXTC;
+
 	wxCheckBox *generateMipmaps;
 	wxCheckBox *removeHalos;
 	wxCheckBox *reconstructColors;

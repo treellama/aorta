@@ -13,6 +13,7 @@
 
 #define wxIMAGE_OPTION_DDS_USE_MIPMAPS wxT("DdsMipmap")
 #define wxIMAGE_OPTION_DDS_FORMAT wxT("DdsFormat")
+#define wxIMAGE_OPTION_DDS_COMPRESS wxT("DdsCompress")
 
 #ifndef __DDRAW_INCLUDED__
 
@@ -92,6 +93,9 @@ private:
 
     // number of mipmap levels, including the first one
     int NumMipmaps(const wxImage& image);
+
+    // handles RGB too
+    void WriteRGBA(const wxImage& image, wxOutputStream& stream);
 
     // these functions assume an OpenGL context
     void WriteDXT1(const wxImage& image, wxOutputStream& stream);

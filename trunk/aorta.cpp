@@ -277,6 +277,10 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	if (ddsOptions.generateMipmaps->GetValue()) {
 	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
 	}
+
+	if (ddsOptions.useDXTC->GetValue()) {
+	    saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
+	}
 	
 	saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
     }
@@ -352,21 +356,25 @@ void BasicPage::UpdateMaskDisplay()
 }
 
 DDSOptionsDialog::DDSOptionsDialog()
-: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
+    : wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
 {
-	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
-	backgroundColor.Set(0xff, 0xff, 0xff);
-	
-	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
-	topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+    backgroundColor.Set(0xff, 0xff, 0xff);
 
+    useDXTC = new wxCheckBox(this, -1, _T("Use DXTC"), wxDefaultPosition, wxDefaultSize);
+    useDXTC->SetValue(1);
+    topSizer->Add(useDXTC, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    
+    chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
+    topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+    
     generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
     generateMipmaps->SetValue(1);
     topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-	
-	reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
-	reconstructColors->SetValue(1);
-	topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
+    
+    reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
+    reconstructColors->SetValue(1);
+    topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
     
     removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
     topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
