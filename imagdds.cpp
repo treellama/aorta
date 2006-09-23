@@ -295,28 +295,42 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 {
     bool mipmap = image->HasOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS) && 
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
+    bool compress = image->HasOption(wxIMAGE_OPTION_DDS_COMPRESS) &&
+	image->GetOptionInt(wxIMAGE_OPTION_DDS_COMPRESS);
 
-    if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {
-	image->Rescale((image->GetWidth() + 3) & ~3, (image->GetHeight() + 3) & ~3);
+    if (compress)  {
+	if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {
+	    image->Rescale((image->GetWidth() + 3) & ~3, (image->GetHeight() + 3) & ~3);
+	}
     }
-
+    
     {
 	SubtleOpenGLContext glContext;
 
 	DDSURFACEDESC2 ddsd;
 	memset(&ddsd, 0, sizeof(ddsd));
 	ddsd.dwSize = 124;
-	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_LINEARSIZE | DDSD_PIXELFORMAT;
+	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
 	ddsd.dwHeight = image->GetHeight();
 	ddsd.dwWidth = image->GetWidth();
-	if (image->HasAlpha()) {
-	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
-	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
+	if (compress) {
+	    ddsd.dwFlags |= DDSD_LINEARSIZE;
+	    if (image->HasAlpha()) {
+		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
+		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
+	    } else {
+		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
+		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
+	    }
 	} else {
-	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
-	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
+	    ddsd.dwFlags |= DDSD_PITCH;
+	    if (image->HasAlpha()) {
+		ddsd.dwPitchOrLinearSize = image->GetWidth() * 4;
+	    } else {
+		ddsd.dwPitchOrLinearSize = image->GetWidth() * 3;
+	    }
 	}
-	
+	    
 	int mipmap_count;
 	
 	if (mipmap) {
@@ -325,7 +339,21 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	}
 
 	ddsd.ddpfPixelFormat.dwSize = 32;
-	ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+	if (compress) {
+	    ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+	} else {
+	    ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
+	    ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(0x00ff0000);
+	    ddsd.ddpfPixelFormat.dwGBitMask = wxINT32_SWAP_ON_BE(0x0000ff00);
+	    ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(0x000000ff);
+	    if (image->HasAlpha())
+	    {
+		ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
+		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(0xff000000);
+	    } else {
+		ddsd.ddpfPixelFormat.dwRGBBitCount = 24;
+	    }
+	}
 
 	ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
 	if (mipmap) ddsd.ddsCaps.dwCaps1 |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
@@ -334,12 +362,16 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	wxImage minImage = *image;
 	
 	for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
-	    if (image->HasAlpha()) {
-		WriteDXT5(minImage, stream);
+	    if (compress) {
+		if (image->HasAlpha()) {
+		    WriteDXT5(minImage, stream);
+		} else {
+		    WriteDXT1(minImage, stream);
+		}
+		minImage = Minify(minImage);
 	    } else {
-		WriteDXT1(minImage, stream);
+		WriteRGBA(minImage, stream);
 	    }
-	    minImage = Minify(minImage);
 	}
 
     }
@@ -391,6 +423,21 @@ void wxDDSHandler::WriteDXT5(const wxImage& image, wxOutputStream& stream)
      for (int row = 0; row < (image.GetHeight() + 3 & ~3) / 4; row++) {
 	 stream.Write(&compressedBuffer[row * potWidth / 4 * 16], (image.GetWidth() + 3 & ~3) / 4 * 16);
     }
+}
+
+void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
+{
+    for (int y = 0; y < image.GetHeight(); y++) {
+	for (int x = 0; x < image.GetWidth(); x++) {
+	    stream.PutC(image.GetBlue(x, y));
+	    stream.PutC(image.GetGreen(x, y));
+	    stream.PutC(image.GetRed(x, y));
+	    if (image.HasAlpha())
+	    {
+		stream.PutC(image.GetAlpha(x, y));
+	    }
+	}
+    }	
 }
 
 wxImage wxDDSHandler::Minify(wxImage &image)
