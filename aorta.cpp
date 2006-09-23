@@ -274,10 +274,14 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 
 	if (ddsOptions.generateMipmaps->GetValue()) {
 	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+	} else {
+	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
 	}
 
 	if (ddsOptions.useDXTC->GetValue()) {
 	    saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
+	} else {
+	    saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
 	}
 	
 	saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
