@@ -27,6 +27,9 @@
 #include <wx/wx.h>
 #include <wx/checkbox.h>
 #include <wx/colordlg.h>
+#ifdef wxUSE_DRAG_AND_DROP
+#include <wx/dnd.h>
+#endif
 #include <wx/image.h>
 #include <wx/notebook.h>
 #include <wx/radiobox.h>
@@ -40,12 +43,19 @@
 
 #include "image_ext.h"
 
+class MainFrame;
+
 class MainApp: public wxApp // MainApp is the class for our application 
 {
 	// MainApp just acts as a container for the window, 
 public: 
 	// or frame in MainFrame 
 	virtual bool OnInit(); 
+#ifdef __WXMAC__
+	void MainApp::MacOpenFile(const wxString &fileName);
+#endif
+private:
+	MainFrame *MainWin;
 };
 
 class BasicPage;
@@ -64,6 +74,7 @@ public:
 	void OnLoadNormal(wxCommandEvent &);
 	void OnLoadMask(wxCommandEvent &);
 	void OnSaveAs(wxCommandEvent &);
+	void LoadNormal(const wxString &);
 
 	DECLARE_EVENT_TABLE()
 
@@ -80,6 +91,9 @@ public:
 	void OnOpacTypeTwo(wxCommandEvent &);
 	void OnOpacTypeThree(wxCommandEvent &);
 	void OnSaveAs(wxCommandEvent &);
+
+	void LoadNormal(const wxString& path);
+	void LoadMask(const wxString& path);
 	
 	void UpdateNormalDisplay();
 	void UpdateMaskDisplay();
@@ -104,6 +118,31 @@ private:
 	
 	wxButton *saveAsButton;
 };
+
+#if wxUSE_DRAG_AND_DROP
+class DnDNormalImage : public wxFileDropTarget
+{
+public:
+	DnDNormalImage(BasicPage *page) { m_page = page; }
+
+	virtual bool OnDropFiles(wxCoord x, wxCoord y,
+				 const wxArrayString& filenames);
+
+private:
+	BasicPage *m_page;
+};
+
+class DnDMask : public wxFileDropTarget
+{
+public:
+	DnDMask(BasicPage *page) { m_page = page; }
+	
+	virtual bool OnDropFiles(wxCoord x, wxCoord y,
+				 const wxArrayString& filenames);
+private:
+	BasicPage *m_page;
+};
+#endif
 
 class DDSOptionsDialog : public wxDialog
 {
