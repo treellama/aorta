@@ -265,9 +265,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	if (ddsOptions.ShowModal() != wxID_OK) return;
 	
 	if (ddsOptions.reconstructColors->GetValue()) {
-		wxColour bg;
-		bg.Set(0xff, 0xff, 0xff);
-		saveImage.ReconstructColors(bg);
+		saveImage.ReconstructColors(ddsOptions.backgroundColor);
 	}
 
 	if (ddsOptions.removeHalos->GetValue()) {
