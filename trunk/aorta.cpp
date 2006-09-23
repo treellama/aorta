@@ -28,11 +28,20 @@ bool MainApp::OnInit()
 	::wxInitAllImageHandlers();
 	wxDDSHandler *ddsHandler = new wxDDSHandler;
 	wxImage::AddHandler(ddsHandler);
-	MainFrame *MainWin = new MainFrame(_("Aorta"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~ (wxRESIZE_BORDER | wxRESIZE_BOX | wxMAXIMIZE_BOX)); 
+	MainWin = new MainFrame(_("Aorta"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~ (wxRESIZE_BORDER | wxRESIZE_BOX | wxMAXIMIZE_BOX)); 
 	MainWin->Show(TRUE); 
 	SetTopWindow(MainWin); 
+
 		return TRUE;
 } 
+
+#ifdef __WXMAC__
+void MainApp::MacOpenFile(const wxString &fileName)
+{
+    MainWin->LoadNormal(fileName);
+}
+
+#endif
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style) 
 : wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
@@ -86,6 +95,11 @@ void MainFrame::OnLoadMask(wxCommandEvent& event)
 	basicPage->OnLoadMask(event);
 }
 
+void MainFrame::LoadNormal(const wxString& path)
+{
+    basicPage->LoadNormal(path);
+}
+
 BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
 : wxNotebookPage(parent, id, pos, size)
 {
@@ -97,15 +111,21 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	whiteImage.White();
 	
 	normalImageStatic = new wxStaticBitmap(this, -1, wxBitmap(whiteImage));
+#ifdef wxUSE_DRAG_AND_DROP
+	normalImageStatic->SetDropTarget(new DnDNormalImage(this));
+#endif	
 	column[0]->Add(normalImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
 	normalImageButton = new wxButton(this, BUTTON_NormalImage, _T("Load normal..."));
 	column[0]->Add(normalImageButton, 0, wxALIGN_CENTER | wxALL, 10);
-	
+
 	pageSizer->Add(column[0], 0, wxEXPAND | wxALL, 10);
 	
 	column[1] = new wxBoxSizer(wxVERTICAL);
 	
 	maskImageStatic = new wxStaticBitmap(this, -1, wxBitmap(whiteImage));
+#ifdef wxUSE_DRAG_AND_DROP
+	maskImageStatic->SetDropTarget(new DnDMask(this));
+#endif
 	column[1]->Add(maskImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
 	
 	wxBoxSizer *loadClearSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -129,7 +149,7 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	saveSizer->AddStretchSpacer(1);
 	saveSizer->Add(saveAsButton, 1, wxEXPAND | wxLEFT, 10);
 	column[1]->Add(saveSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
-	
+
 	pageSizer->Add(column[1], 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
 	
 	SetAutoLayout(TRUE);
@@ -141,74 +161,33 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 
 void BasicPage::OnLoadNormal(wxCommandEvent &)
 {
-	wxFileDialog *openFileDialog = new wxFileDialog( this,
-													 _("Choose Image"),
-													 _(""),
-													 _(""),
-													 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
-													 wxOPEN | wxCHANGE_DIR,
-													 wxDefaultPosition);
-	if (openFileDialog->ShowModal() == wxID_OK)
-	{
-		normalImage.LoadFile(openFileDialog->GetPath());
-		if (normalImage.Ok())
-		{
-			if (normalImage.HasMask()) normalImage.MaskToAlpha();
-			
-			if (normalImage.HasAlpha())
-			{
-				// convert the mask to grayscale for display
-				maskImage.FromAlpha(normalImage);
-				normalImage.RemoveAlpha();
-			}
-			else
-			{
-				maskImage.Destroy();
-			}
-
-			UpdateNormalDisplay();
-			UpdateMaskDisplay();
-		} 
-		else
-		{
-			normalImage.Destroy();
-			maskImage.Destroy();
-			UpdateNormalDisplay();
-			UpdateMaskDisplay();
-		}
-	}
+    wxFileDialog *openFileDialog = new wxFileDialog( this,
+						     _("Choose Image"),
+						     _(""),
+						     _(""),
+						     _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
+						     wxOPEN | wxCHANGE_DIR,
+						     wxDefaultPosition);
+    if (openFileDialog->ShowModal() == wxID_OK)
+    {
+	LoadNormal(openFileDialog->GetPath());
+    }
 }
+
 
 void BasicPage::OnLoadMask(wxCommandEvent &)
 {
-	wxFileDialog *openFileDialog = new wxFileDialog(this,
-													_T("Choose Mask"),
-													_T(""),
-													_T(""),
-													_T("Image Files ") + wxImage::GetImageExtWildcard(),
-													wxOPEN | wxCHANGE_DIR,
-													wxDefaultPosition);
-	if (openFileDialog->ShowModal() == wxID_OK)
-	{
-		maskImage.LoadFile(openFileDialog->GetPath());
-		if (maskImage.Ok())
-		{
-			if (maskImage.GetWidth() == normalImage.GetWidth() && maskImage.GetHeight() == normalImage.GetHeight())
-			{
-				maskImage.MakeOpacTypeTwo();
-			}
-			else
-			{
-				wxMessageBox(_T("The mask must be the same width and height as the image."), _T("Invalid mask"), wxOK);
-				maskImage.Destroy();
-			}
-		}
-		else
-		{
-			maskImage.Destroy();
-		}
-		UpdateMaskDisplay();
-	}
+    wxFileDialog *openFileDialog = new wxFileDialog(this,
+						    _T("Choose Mask"),
+						    _T(""),
+						    _T(""),
+						    _T("Image Files ") + wxImage::GetImageExtWildcard(),
+						    wxOPEN | wxCHANGE_DIR,
+						    wxDefaultPosition);
+    if (openFileDialog->ShowModal() == wxID_OK)
+    {
+	LoadMask(openFileDialog->GetPath());
+    }
 }
 
 void BasicPage::OnClearMask(wxCommandEvent &)
@@ -286,6 +265,58 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	
 	saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
     }
+}
+
+void BasicPage::LoadNormal(const wxString& path)
+{
+    normalImage.LoadFile(path);
+    if (normalImage.Ok())
+    {
+	if (normalImage.HasMask()) normalImage.MaskToAlpha();
+	
+	if (normalImage.HasAlpha())
+	{
+	    // convert the mask to grayscale for display
+	    maskImage.FromAlpha(normalImage);
+	    normalImage.RemoveAlpha();
+	}
+	else
+	{
+	    maskImage.Destroy();
+	}
+	
+	UpdateNormalDisplay();
+	UpdateMaskDisplay();
+    } 
+    else
+    {
+	normalImage.Destroy();
+	maskImage.Destroy();
+	UpdateNormalDisplay();
+	UpdateMaskDisplay();
+    }
+}
+
+void BasicPage::LoadMask(const wxString& path)
+{
+    maskImage.LoadFile(path);
+    if (maskImage.Ok())
+    {
+	if (maskImage.GetWidth() == normalImage.GetWidth() && maskImage.GetHeight() == normalImage.GetHeight())
+	{
+	    maskImage.MakeOpacTypeTwo();
+	}
+	else
+	{
+	    wxMessageBox(_T("The mask must be the same width and height as the image."), _T("Invalid mask"), wxOK);
+	    maskImage.Destroy();
+	}
+    }
+    else
+    {
+	maskImage.Destroy();
+    }
+    UpdateMaskDisplay();
 }
 
 void BasicPage::SetMaskButtonEnablement(bool enabled)
@@ -407,4 +438,16 @@ void DDSOptionsDialog::OnChooseBackground(wxCommandEvent &)
 		wxColourData redData = dialog.GetColourData();
 		backgroundColor = redData.GetColour();
 	}
+}
+
+bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
+{
+    if (filenames[0])
+	m_page->LoadNormal(filenames[0]);
+}
+
+bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
+{
+    if (filenames[0])
+	m_page->LoadMask(filenames[0]);
 }
