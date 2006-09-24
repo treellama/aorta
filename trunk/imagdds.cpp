@@ -75,6 +75,37 @@ private:
     GLuint textureRef;
 };
 
+bool HasS3TC()
+{
+    static bool initialized = false;
+    static bool hasS3TCext = false;
+    if (!initialized) 
+    {
+	wxFrame* frame = new wxFrame(NULL, -1, _T(""), wxPoint(0, 0), wxSize(1, 1), wxFRAME_NO_TASKBAR);
+	wxGLCanvas* canvas = new wxGLCanvas(frame, -1, wxDefaultPosition, wxDefaultSize);
+	frame->Show();
+	canvas->SetCurrent();
+	
+	char *extensions = (char *) glGetString(GL_EXTENSIONS);
+	
+	while (extensions && *extensions)
+	{
+	    unsigned int length = strcspn(extensions, " ");
+	    
+	    if (strncmp("GL_EXT_texture_compression_s3tc", extensions, length) == 0)
+		hasS3TCext = true;
+	    
+	    extensions += length + 1;
+	}
+	
+	initialized = true;
+	
+	frame->Close();
+    }
+    
+    return hasS3TCext;
+}
+
 bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)
 {
     // try to read the whole thing, then swap it
@@ -147,7 +178,7 @@ bool wxDDSHandler::DoCanRead(wxInputStream& stream)
     if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
 	return (ddsd.ddpfPixelFormat.dwRGBBitCount == 24 || ddsd.ddpfPixelFormat.dwRGBBitCount == 32);
     }
-    else if ((ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
+    else if (HasS3TC() && (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
 	     (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '5')))
@@ -185,6 +216,7 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	}
     }
     if (internalFormat == GL_NONE) return FALSE;
+    if (!HasS3TC() && (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)) return FALSE;
 
     int width = ddsd.dwWidth;
     int height = ddsd.dwHeight;
@@ -285,6 +317,8 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
     bool compress = image->HasOption(wxIMAGE_OPTION_DDS_COMPRESS) &&
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_COMPRESS);
+
+    if (!HasS3TC() && compress) return FALSE;
 
     if (compress)  {
 	if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {

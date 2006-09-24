@@ -1,27 +1,29 @@
 /*
 
-aorta.cpp: the Aleph One Replacement Texture Utility
-Copyright (C) 2006  Gregory Smith
+  aorta.cpp: the Aleph One Replacement Texture Utility
+  Copyright (C) 2006  Gregory Smith
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+  This program is free software; you can redistribute it and/or
+  modify it under the terms of the GNU General Public License
+  as published by the Free Software Foundation; either version 2
+  of the License, or (at your option) any later version.
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  
- */
+*/
 #include "aorta.h" 
 #include "imagdds.h"
 
 IMPLEMENT_APP(MainApp)  
+
+extern bool HasS3TC(); // from imagdds
 
 bool MainApp::OnInit() 
 { 
@@ -34,6 +36,9 @@ bool MainApp::OnInit()
 
 	if (argc > 1)
 		MainWin->LoadNormal(argv[1]);
+
+	if (!HasS3TC())
+		wxMessageBox(_T("This machine does not appear to have an S3TC license. DXTC support will be disabled."), _T("Warning"), wxOK);
 	
 	return TRUE;
 } 
@@ -41,13 +46,13 @@ bool MainApp::OnInit()
 #ifdef __WXMAC__
 void MainApp::MacOpenFile(const wxString &fileName)
 {
-    MainWin->LoadNormal(fileName);
+	MainWin->LoadNormal(fileName);
 }
 
 #endif
 
 MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style) 
-: wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
+  : wxFrame((wxFrame *) NULL, -1, title, pos, size, style) 
 { 
 	fileMenu = new wxMenu;
 	fileMenu->Append(wxID_ABOUT, _T("&About Aorta..."));
@@ -80,7 +85,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
 
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
-    wxMessageBox(_T("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), _T("About Aorta"), wxOK);
+	wxMessageBox(_T("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), _T("About Aorta"), wxOK);
 }
 
 void MainFrame::OnLoadNormal(wxCommandEvent& event)
@@ -100,11 +105,11 @@ void MainFrame::OnLoadMask(wxCommandEvent& event)
 
 void MainFrame::LoadNormal(const wxString& path)
 {
-    basicPage->LoadNormal(path);
+	basicPage->LoadNormal(path);
 }
 
 BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
-: wxNotebookPage(parent, id, pos, size)
+  : wxNotebookPage(parent, id, pos, size)
 {
 	wxBoxSizer *pageSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *column[2];
@@ -172,33 +177,33 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 
 void BasicPage::OnLoadNormal(wxCommandEvent &)
 {
-    wxFileDialog *openFileDialog = new wxFileDialog( this,
-						     _("Choose Image"),
-						     _(""),
-						     _(""),
-						     _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
-						     wxOPEN | wxCHANGE_DIR,
-						     wxDefaultPosition);
-    if (openFileDialog->ShowModal() == wxID_OK)
-    {
-	LoadNormal(openFileDialog->GetPath());
-    }
+	wxFileDialog *openFileDialog = new wxFileDialog( this,
+							 _("Choose Image"),
+							 _(""),
+							 _(""),
+							 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
+							 wxOPEN | wxCHANGE_DIR,
+							 wxDefaultPosition);
+	if (openFileDialog->ShowModal() == wxID_OK)
+	{
+		LoadNormal(openFileDialog->GetPath());
+	}
 }
 
 
 void BasicPage::OnLoadMask(wxCommandEvent &)
 {
-    wxFileDialog *openFileDialog = new wxFileDialog(this,
-						    _T("Choose Mask"),
-						    _T(""),
-						    _T(""),
-						    _T("Image Files ") + wxImage::GetImageExtWildcard(),
-						    wxOPEN | wxCHANGE_DIR,
-						    wxDefaultPosition);
-    if (openFileDialog->ShowModal() == wxID_OK)
-    {
-	LoadMask(openFileDialog->GetPath());
-    }
+	wxFileDialog *openFileDialog = new wxFileDialog(this,
+							_T("Choose Mask"),
+							_T(""),
+							_T(""),
+							_T("Image Files ") + wxImage::GetImageExtWildcard(),
+							wxOPEN | wxCHANGE_DIR,
+							wxDefaultPosition);
+	if (openFileDialog->ShowModal() == wxID_OK)
+	{
+		LoadMask(openFileDialog->GetPath());
+	}
 }
 
 void BasicPage::OnClearMask(wxCommandEvent &)
@@ -223,115 +228,115 @@ void BasicPage::OnOpacTypeThree(wxCommandEvent &)
 
 void BasicPage::OnSaveAs(wxCommandEvent &)
 {
-    if (!normalImage.Ok()) return;
-    wxFileDialog *saveFileDialog = new wxFileDialog(this,
-						    _T("Save As"),
-						    _T(""),
-						    (normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
-						    _T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
-						    wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
-						    wxDefaultPosition);
-    if (saveFileDialog->ShowModal() != wxID_OK) return;
+	if (!normalImage.Ok()) return;
+	wxFileDialog *saveFileDialog = new wxFileDialog(this,
+							_T("Save As"),
+							_T(""),
+							(normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
+							_T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
+							wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
+							wxDefaultPosition);
+	if (saveFileDialog->ShowModal() != wxID_OK) return;
     
-    wxImageExt saveImage = normalImage;
-    if (maskImage.Ok())
-    {
-	maskImage.ToAlpha(saveImage);
-//			saveImage.PrepareForMipmaps();
-    }
-    else
-    {
-	if (saveImage.HasAlpha())
+	wxImageExt saveImage = normalImage;
+	if (maskImage.Ok())
 	{
-	    exit(0);
+		maskImage.ToAlpha(saveImage);
+//			saveImage.PrepareForMipmaps();
 	}
-    }
-
-    if (saveFileDialog->GetFilename().AfterLast('.').MakeLower() == _T("png")) {
-	saveImage.SaveFile(saveFileDialog->GetPath(), wxBITMAP_TYPE_PNG);
-    } else {
-	// query for a preset
-	DDSOptionsDialog ddsOptions;
-	if (ddsOptions.ShowModal() != wxID_OK) return;
-	
-	if (ddsOptions.reconstructColors->GetValue()) {
-		saveImage.ReconstructColors(ddsOptions.backgroundColor);
+	else
+	{
+		if (saveImage.HasAlpha())
+		{
+			exit(0);
+		}
 	}
 
-	if (ddsOptions.removeHalos->GetValue()) {
-	    saveImage.PrepareForMipmaps();
-	}
-
-	if (ddsOptions.generateMipmaps->GetValue()) {
-	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+	if (saveFileDialog->GetFilename().AfterLast('.').MakeLower() == _T("png")) {
+		saveImage.SaveFile(saveFileDialog->GetPath(), wxBITMAP_TYPE_PNG);
 	} else {
-	    saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
-	}
-
-	if (ddsOptions.useDXTC->GetValue()) {
-	    saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
-	} else {
-	    saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
-	}
+		// query for a preset
+		DDSOptionsDialog ddsOptions;
+		if (ddsOptions.ShowModal() != wxID_OK) return;
 	
-	saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
-    }
+		if (ddsOptions.reconstructColors->GetValue()) {
+			saveImage.ReconstructColors(ddsOptions.backgroundColor);
+		}
+
+		if (ddsOptions.removeHalos->GetValue()) {
+			saveImage.PrepareForMipmaps();
+		}
+
+		if (ddsOptions.generateMipmaps->GetValue()) {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+		} else {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
+		}
+
+		if (ddsOptions.useDXTC->GetValue()) {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
+		} else {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
+		}
+	
+		saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
+	}
 }
 
 void BasicPage::LoadNormal(const wxString& path)
 {
-    normalImage.LoadFile(path);
-    if (normalImage.Ok())
-    {
-	if (normalImage.HasMask()) normalImage.MaskToAlpha();
-	
-	if (normalImage.HasAlpha())
+	normalImage.LoadFile(path);
+	if (normalImage.Ok())
 	{
-	    // convert the mask to grayscale for display
-	    maskImage.FromAlpha(normalImage);
-	    normalImage.RemoveAlpha();
-	}
+		if (normalImage.HasMask()) normalImage.MaskToAlpha();
+	
+		if (normalImage.HasAlpha())
+		{
+			// convert the mask to grayscale for display
+			maskImage.FromAlpha(normalImage);
+			normalImage.RemoveAlpha();
+		}
+		else
+		{
+			maskImage.Destroy();
+		}
+	
+		normalImageFilename->SetLabel(path.AfterLast('/'));
+		wxString dimensionsString;
+		dimensionsString.Printf("%ix%i", normalImage.GetWidth(), normalImage.GetHeight());
+		normalImageSize->SetLabel(dimensionsString);
+		UpdateNormalDisplay();
+		UpdateMaskDisplay();
+	} 
 	else
 	{
-	    maskImage.Destroy();
+		normalImage.Destroy();
+		maskImage.Destroy();
+		UpdateNormalDisplay();
+		UpdateMaskDisplay();
 	}
-	
-	normalImageFilename->SetLabel(path.AfterLast('/'));
-	wxString dimensionsString;
-	dimensionsString.Printf("%ix%i", normalImage.GetWidth(), normalImage.GetHeight());
-	normalImageSize->SetLabel(dimensionsString);
-	UpdateNormalDisplay();
-	UpdateMaskDisplay();
-    } 
-    else
-    {
-	normalImage.Destroy();
-	maskImage.Destroy();
-	UpdateNormalDisplay();
-	UpdateMaskDisplay();
-    }
 }
 
 void BasicPage::LoadMask(const wxString& path)
 {
-    maskImage.LoadFile(path);
-    if (maskImage.Ok())
-    {
-	if (maskImage.GetWidth() == normalImage.GetWidth() && maskImage.GetHeight() == normalImage.GetHeight())
+	maskImage.LoadFile(path);
+	if (maskImage.Ok())
 	{
-	    maskImage.MakeOpacTypeTwo();
+		if (maskImage.GetWidth() == normalImage.GetWidth() && maskImage.GetHeight() == normalImage.GetHeight())
+		{
+			maskImage.MakeOpacTypeTwo();
+		}
+		else
+		{
+			wxMessageBox(_T("The mask must be the same width and height as the image."), _T("Invalid mask"), wxOK);
+			maskImage.Destroy();
+		}
 	}
 	else
 	{
-	    wxMessageBox(_T("The mask must be the same width and height as the image."), _T("Invalid mask"), wxOK);
-	    maskImage.Destroy();
+		maskImage.Destroy();
 	}
-    }
-    else
-    {
-	maskImage.Destroy();
-    }
-    UpdateMaskDisplay();
+	UpdateMaskDisplay();
 }
 
 void BasicPage::SetMaskButtonEnablement(bool enabled)
@@ -407,57 +412,64 @@ void BasicPage::UpdateMaskDisplay()
 }
 
 DDSOptionsDialog::DDSOptionsDialog()
-    : wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
+	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
 {
 
-    wxConfig config;
-    wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
-    backgroundColor.Set(0xff, 0xff, 0xff);
-
-    useDXTC = new wxCheckBox(this, -1, _T("Use DXTC"), wxDefaultPosition, wxDefaultSize);
-    bool value;
-    config.Read("Single/UseDXTC", &value, true);
-    useDXTC->SetValue(value ? 1 : 0);
-    topSizer->Add(useDXTC, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-    
-    long r, g, b;
-    
-    config.Read("Single/BackgroundColor/R", &r, 0xff);
-    config.Read("Single/BackgroundColor/G", &g, 0xff);
-    config.Read("Single/BackgroundColor/B", &b, 0xff);
-    backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
-    chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
-    topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-    
-    config.Read("Single/GenerateMipmaps", &value, true);
-    generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
-    generateMipmaps->SetValue(value ? 1 : 0);
-    topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-    
-    config.Read("Single/ReconstructColors", &value, true);
-    reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
-    reconstructColors->SetValue(value ? 1 : 0);
-    topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
-    
-    config.Read("Single/RemoveHalos", &value, false);
-    removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
-    removeHalos->SetValue(value ? 1 : 0);
-    topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-    wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-    wxButton *cancelButton = new wxButton(this, wxID_CANCEL);
-    buttonSizer->Add(cancelButton, 1, wxEXPAND | wxALL, 10);
-    wxButton *okButton = new wxButton(this, wxID_OK);
-    okButton->SetDefault();
-    buttonSizer->Add(okButton, 1, wxEXPAND | wxALL, 10);
-
-    topSizer->Add(buttonSizer, 1, wxEXPAND);
-
-
-    SetAutoLayout(TRUE);
-    SetSizer(topSizer);
-    topSizer->Fit(this);
-    topSizer->SetSizeHints(this);
-
+	wxConfig config;
+	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
+	backgroundColor.Set(0xff, 0xff, 0xff);
+	
+	useDXTC = new wxCheckBox(this, -1, _T("Use DXTC"), wxDefaultPosition, wxDefaultSize);
+	bool value;
+	if (HasS3TC()) 
+	{
+		config.Read("Single/UseDXTC", &value, true);
+		useDXTC->SetValue(value ? 1 : 0);
+	} 
+	else 
+	{
+		useDXTC->SetValue(0);
+		useDXTC->Enable(false);
+	}
+	topSizer->Add(useDXTC, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	
+	long r, g, b;
+	
+	config.Read("Single/BackgroundColor/R", &r, 0xff);
+	config.Read("Single/BackgroundColor/G", &g, 0xff);
+	config.Read("Single/BackgroundColor/B", &b, 0xff);
+	backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
+	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
+	topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	
+	config.Read("Single/GenerateMipmaps", &value, true);
+	generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
+	generateMipmaps->SetValue(value ? 1 : 0);
+	topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
+	
+	config.Read("Single/ReconstructColors", &value, true);
+	reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
+	reconstructColors->SetValue(value ? 1 : 0);
+	topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
+	
+	config.Read("Single/RemoveHalos", &value, false);
+	removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
+	removeHalos->SetValue(value ? 1 : 0);
+	topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
+	wxButton *cancelButton = new wxButton(this, wxID_CANCEL);
+	buttonSizer->Add(cancelButton, 1, wxEXPAND | wxALL, 10);
+	wxButton *okButton = new wxButton(this, wxID_OK);
+	okButton->SetDefault();
+	buttonSizer->Add(okButton, 1, wxEXPAND | wxALL, 10);
+	
+	topSizer->Add(buttonSizer, 1, wxEXPAND);
+	
+	
+	SetAutoLayout(TRUE);
+	SetSizer(topSizer);
+	topSizer->Fit(this);
+	topSizer->SetSizeHints(this);
 }
 
 bool DDSOptionsDialog::Validate()
@@ -488,12 +500,12 @@ void DDSOptionsDialog::OnChooseBackground(wxCommandEvent &)
 
 bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (filenames[0])
-	m_page->LoadNormal(filenames[0]);
+	if (filenames[0])
+		m_page->LoadNormal(filenames[0]);
 }
 
 bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (filenames[0])
-	m_page->LoadMask(filenames[0]);
+	if (filenames[0])
+		m_page->LoadMask(filenames[0]);
 }
