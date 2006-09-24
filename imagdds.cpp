@@ -26,6 +26,8 @@
 #include <OpenGL/glu.h>
 #endif
 
+#include <squish.h>
+
 #include "math.h"
 #include <vector>
 using namespace std;
@@ -240,54 +242,40 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 
     int compressedBufferSize = (potWidth * potHeight * bpp) / 8;
 
-    GLbyte *compressedBuffer = new GLbyte[compressedBufferSize];
-    for (int row = 0; row < height / 4; row++) {
-	stream.Read(&compressedBuffer[row * potWidth / 4 * bpp * 2], width / 4 * bpp * 2);
-	if (stream.LastRead() != width / 4 * bpp * 2) {
-	    delete[] compressedBuffer;
-	    return FALSE;
-	}
+    vector<GLbyte> compressedBuffer(width * height * bpp / 8);
+    stream.Read(&compressedBuffer.front(), compressedBuffer.size());
+    if (stream.LastRead() != compressedBuffer.size()) {
+	return FALSE;
     }
 
-    {
-	SubtleOpenGLContext context;
-	
-	glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, potWidth, potHeight, 0, compressedBufferSize, compressedBuffer);
-	
-	if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) {
-	    image->Create(width, height);
-	    GLbyte *uncompressedBuffer = new GLbyte[potWidth * potHeight * 3];
-	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, uncompressedBuffer);
-	    for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-		    image->GetData()[(x + y * width) * 3 + 0] = uncompressedBuffer[(x + y * potWidth) * 3 + 0];
-		    image->GetData()[(x + y * width) * 3 + 1] = uncompressedBuffer[(x + y * potWidth) * 3 + 1];
-		    image->GetData()[(x + y * width) * 3 + 2] = uncompressedBuffer[(x + y * potWidth) * 3 + 2];
-		}
-	    }
-
-	    delete [] uncompressedBuffer;
-	} else if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT) {
-	    GLbyte *uncompressedBuffer = new GLbyte[potWidth * potHeight * 4];
-	    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, uncompressedBuffer);
-	    
-	    image->Create(width, height);
-	    image->InitAlpha();
-	    for (int x = 0; x < width; x++) {
-		for (int y = 0; y < height; y++) {
-		    image->GetData()[(x + y * width) * 3 + 0] = uncompressedBuffer[(x + y * potWidth) * 4 + 0];
-		    image->GetData()[(x + y * width) * 3 + 1] = uncompressedBuffer[(x + y * potWidth) * 4 + 1];
-		    image->GetData()[(x + y * width) * 3 + 2] = uncompressedBuffer[(x + y * potWidth) * 4 + 2];
-		    image->GetAlpha()[x + y * width] = uncompressedBuffer[(x + y * potWidth) * 4 + 3];
-		}
-	    }
-	    
-	    delete[] uncompressedBuffer;
+    image->Create(width, height);
+    vector<unsigned char> uncompressedBuffer(width * height * 4);
+    int flags;
+    if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) {
+	flags = squish::kDxt1;
+    } else {
+	if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT) {
+	    flags = squish::kDxt3;
+	} else {
+	    flags = squish::kDxt5;
 	}
-
+	image->InitAlpha();
+    }
+	  
+    squish::DecompressImage(&uncompressedBuffer.front(), width, height, &compressedBuffer.front(), flags);
+    
+    for (int x = 0; x < width; x++) {
+	for (int y = 0; y < height; y++) {
+	    image->GetData()[(x + y * width) * 3 + 0] = uncompressedBuffer[(x + y * width) * 4 + 0];
+	    image->GetData()[(x + y * width) * 3 + 1] = uncompressedBuffer[(x + y * width) * 4 + 1];
+	    image->GetData()[(x + y * width) * 3 + 2] = uncompressedBuffer[(x + y * width) * 4 + 2];
+	    if (image->HasAlpha()) {
+		image->GetAlpha()[(x + y * width)] = uncompressedBuffer[(x + y * width) * 4 + 3];
+	    }
+	}
+	
     }
 
-    delete[] compressedBuffer;
     return TRUE;
 }
 
@@ -381,47 +369,38 @@ int wxDDSHandler::NumMipmaps(const wxImage &image)
     return (1 + (int) floor(log(MAX(image.GetWidth(), image.GetHeight())) / log(2)));
 }
 
-void wxDDSHandler::WriteDXT1(const wxImage& image, wxOutputStream& stream)
+static vector<unsigned char> BuildRGBAImage(const wxImage& image)
 {
-    int potWidth = NextPowerOfTwo(image.GetWidth());
-    int potHeight = NextPowerOfTwo(image.GetHeight());
-
-    wxImage potImage = image.Size(wxSize(potWidth, potHeight), wxPoint(0, 0), 0, 0, 0);
-    glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGB_S3TC_DXT1_EXT, potWidth, potHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, potImage.GetData());
-    
-    vector<GLbyte> compressedBuffer(MAX(potWidth / 4, 1) * MAX(potHeight / 4, 1) * 8);
-    glGetCompressedTexImage(GL_TEXTURE_2D, 0, &compressedBuffer.front());
-
-    for (int row = 0; row < (image.GetHeight() + 3 & ~3) / 4; row++) {
-	stream.Write(&compressedBuffer[row * potWidth / 4 * 8], (image.GetWidth() + 3 & ~3) / 4 * 8);
-    }
-}
-
-void wxDDSHandler::WriteDXT5(const wxImage& image, wxOutputStream& stream)
-{
-    int potWidth = NextPowerOfTwo(image.GetWidth());
-    int potHeight = NextPowerOfTwo(image.GetHeight());
-
-    vector<GLbyte> uncompressedBuffer(potWidth * potHeight * 4);
+    vector<unsigned char> buffer(image.GetWidth() * image.GetHeight() * 4);
     for (int x = 0; x < image.GetWidth(); x++) {
 	for (int y = 0; y < image.GetHeight(); y++) {
-	    uncompressedBuffer[(x + y * potWidth) * 4 + 0] = image.GetRed(x, y);
-	    uncompressedBuffer[(x + y * potWidth) * 4 + 1] = image.GetGreen(x, y);
-	    uncompressedBuffer[(x + y * potWidth) * 4 + 2] = image.GetBlue(x, y);
-	    uncompressedBuffer[(x + y * potWidth) * 4 + 3] = image.HasAlpha() ? image.GetAlpha(x, y) : 0xff;
+	    buffer[(x + y * image.GetWidth()) * 4 + 0] = image.GetRed(x, y);
+	    buffer[(x + y * image.GetWidth()) * 4 + 1] = image.GetGreen(x, y);
+	    buffer[(x + y * image.GetWidth()) * 4 + 2] = image.GetBlue(x, y);
+	    if (image.HasAlpha())
+		buffer[(x + y * image.GetWidth()) * 4 + 3] = image.GetAlpha(x, y);
+	    else
+		buffer[(x + y * image.GetWidth()) * 4 + 3] = 0xff;
 	}
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT, potWidth, potHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, &uncompressedBuffer.front());
+    return buffer;
+}
 
-    vector<GLbyte> compressedBuffer(MAX(potWidth / 4, 1) * MAX(potHeight / 4, 1) * 16);
-     glGetCompressedTexImage(GL_TEXTURE_2D, 0, &compressedBuffer.front());
 
-     for (int row = 0; row < (image.GetHeight() + 3 & ~3) / 4; row++) {
-	 stream.Write(&compressedBuffer[row * potWidth / 4 * 16], (image.GetWidth() + 3 & ~3) / 4 * 16);
-    }
+void wxDDSHandler::WriteDXT1(const wxImage& image, wxOutputStream& stream)
+{
+    vector<unsigned char> compressedBuffer(squish::GetStorageRequirements(image.GetWidth(), image.GetHeight(), squish::kDxt1));
+    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt1);
+    stream.Write(&compressedBuffer.front(), compressedBuffer.size());
+}
+
+
+void wxDDSHandler::WriteDXT5(const wxImage& image, wxOutputStream& stream)
+{
+    vector<unsigned char> compressedBuffer(squish::GetStorageRequirements(image.GetWidth(), image.GetHeight(), squish::kDxt5));
+    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt5);
+    stream.Write(&compressedBuffer.front(), compressedBuffer.size());
 }
 
 void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
