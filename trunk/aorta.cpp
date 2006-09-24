@@ -32,7 +32,10 @@ bool MainApp::OnInit()
 	MainWin->Show(TRUE); 
 	SetTopWindow(MainWin); 
 
-		return TRUE;
+	if (argc > 1)
+		MainWin->LoadNormal(argv[1]);
+	
+	return TRUE;
 } 
 
 #ifdef __WXMAC__
