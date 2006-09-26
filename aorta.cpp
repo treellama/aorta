@@ -38,7 +38,7 @@ bool MainApp::OnInit()
 		MainWin->LoadNormal(argv[1]);
 
 	if (!HasS3TC())
-		wxMessageBox(_T("This machine does not appear to have an S3TC license. DXTC support will be disabled."), _T("Warning"), wxOK);
+		wxMessageBox(_T("Can not locate Squish Framework; DXTC support is not available."), _T("Warning"), wxOK);
 	
 	return TRUE;
 } 
