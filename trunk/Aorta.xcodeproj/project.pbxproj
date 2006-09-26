@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */; };
+		AEA152AC0AC9DFEB00E8890F /* Aorta File.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */; };
 		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
 		AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEBF5BA90A1642D200C810B8 /* image_ext.cpp */; };
 		AED0D9110A10256500C61B65 /* aorta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED0D9100A10256500C61B65 /* aorta.cpp */; };
@@ -16,10 +17,11 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Aorta File.icns"; sourceTree = "<group>"; };
 		AEBF58240A1025ED00C810B8 /* Aorta.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Aorta.icns; sourceTree = "<group>"; };
 		AEBF5B6B0A163E6300C810B8 /* image_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = image_ext.h; sourceTree = "<group>"; };
 		AEBF5BA90A1642D200C810B8 /* image_ext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = image_ext.cpp; sourceTree = "<group>"; };
-		AED0D8D00A101D4800C61B65 /* Aorta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aorta.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED0D8D00A101D4800C61B65 /* Aorta.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Aorta.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Aorta-Info.plist"; sourceTree = "<group>"; };
 		AED0D9090A10251B00C61B65 /* aorta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aorta.h; sourceTree = "<group>"; };
 		AED0D9100A10256500C61B65 /* aorta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aorta.cpp; sourceTree = "<group>"; };
@@ -43,6 +45,7 @@
 		AE95AFE90A16A6EC00E758BE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */,
 				AEFCB5B00AC77A520004082D /* Squish.framework */,
 				AEBF58240A1025ED00C810B8 /* Aorta.icns */,
 				AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */,
@@ -115,6 +118,7 @@
 			files = (
 				AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */,
 				AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */,
+				AEA152AC0AC9DFEB00E8890F /* Aorta File.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

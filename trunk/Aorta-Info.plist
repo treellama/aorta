@@ -11,6 +11,8 @@
 			<array>
 				<string>dds</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Aorta File.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>DDS Image</string>
 			<key>CFBundleTypeRole</key>
@@ -25,6 +27,8 @@
 			<array>
 				<string>png</string>
 			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>Aorta File.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>PNG Image</string>
 			<key>CFBundleTypeRole</key>
