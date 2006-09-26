@@ -77,33 +77,7 @@ private:
 
 bool HasS3TC()
 {
-    static bool initialized = false;
-    static bool hasS3TCext = false;
-    if (!initialized) 
-    {
-	wxFrame* frame = new wxFrame(NULL, -1, _T(""), wxPoint(0, 0), wxSize(1, 1), wxFRAME_NO_TASKBAR);
-	wxGLCanvas* canvas = new wxGLCanvas(frame, -1, wxDefaultPosition, wxDefaultSize);
-	frame->Show();
-	canvas->SetCurrent();
-	
-	char *extensions = (char *) glGetString(GL_EXTENSIONS);
-	
-	while (extensions && *extensions)
-	{
-	    unsigned int length = strcspn(extensions, " ");
-	    
-	    if (strncmp("GL_EXT_texture_compression_s3tc", extensions, length) == 0)
-		hasS3TCext = true;
-	    
-	    extensions += length + 1;
-	}
-	
-	initialized = true;
-	
-	frame->Close();
-    }
-    
-    return hasS3TCext;
+    return ((void *) squish::CompressImage != (void *) squish::DecompressImage);
 }
 
 bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)

@@ -11,6 +11,7 @@
 		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
 		AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEBF5BA90A1642D200C810B8 /* image_ext.cpp */; };
 		AED0D9110A10256500C61B65 /* aorta.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AED0D9100A10256500C61B65 /* aorta.cpp */; };
+		AEFCB5B10AC77A520004082D /* Squish.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFCB5B00AC77A520004082D /* Squish.framework */; };
 		AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEFE01180A1979B700E99D09 /* imagdds.cpp */; };
 /* End PBXBuildFile section */
 
@@ -22,6 +23,7 @@
 		AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Aorta-Info.plist"; sourceTree = "<group>"; };
 		AED0D9090A10251B00C61B65 /* aorta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aorta.h; sourceTree = "<group>"; };
 		AED0D9100A10256500C61B65 /* aorta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aorta.cpp; sourceTree = "<group>"; };
+		AEFCB5B00AC77A520004082D /* Squish.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Squish.framework; path = /Library/Frameworks/Squish.framework; sourceTree = "<absolute>"; };
 		AEFE01180A1979B700E99D09 /* imagdds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = imagdds.cpp; sourceTree = "<group>"; };
 		AEFE01190A1979B700E99D09 /* imagdds.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = imagdds.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -31,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AEFCB5B10AC77A520004082D /* Squish.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -40,6 +43,7 @@
 		AE95AFE90A16A6EC00E758BE /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AEFCB5B00AC77A520004082D /* Squish.framework */,
 				AEBF58240A1025ED00C810B8 /* Aorta.icns */,
 				AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */,
 			);
@@ -228,6 +232,7 @@
 					"-I/usr/local/lib/wx/include/mac-ansi-release-static-2.6",
 					"-I/usr/local/include/wx-2.6",
 					"-D__WXMAC__",
+					"-I/Library/Frameworks/Squish.framework/Headers",
 					"-D_FILE_OFFSET_BITS=64",
 					"-D_LARGE_FILES",
 					"-DNO_GCC_PRAGMA",
@@ -261,6 +266,8 @@
 					AGL,
 					"-framework",
 					WebKit,
+					"-weak_framework",
+					Squish,
 					"-lwxexpat-2.6",
 					"-lwxtiff-2.6",
 					"-lwxjpeg-2.6",
@@ -268,7 +275,6 @@
 					"-lz",
 					"-lpthread",
 					"-liconv",
-					"-lsquish",
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Aorta;
