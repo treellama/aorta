@@ -158,6 +158,7 @@ public:
 	wxCheckBox *generateMipmaps;
 	wxCheckBox *removeHalos;
 	wxCheckBox *reconstructColors;
+	wxCheckBox *premultiplyAlpha;
 	
 	wxButton *chooseBackground;
 	wxColour backgroundColor;

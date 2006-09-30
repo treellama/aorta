@@ -278,6 +278,12 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 		} else {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
 		}
+
+		if (ddsOptions.premultiplyAlpha->GetValue()) {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
+		} else {
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
+		}
 	
 		saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
 	}
@@ -451,6 +457,11 @@ DDSOptionsDialog::DDSOptionsDialog()
 	reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
 	reconstructColors->SetValue(value ? 1 : 0);
 	topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
+
+	config.Read("Single/PremultiplyAlpha", &value, false);
+	premultiplyAlpha = new wxCheckBox(this, -1, _T("Premultiply Alpha"), wxDefaultPosition, wxDefaultSize);
+	premultiplyAlpha->SetValue(value ? 1 : 0);
+	topSizer->Add(premultiplyAlpha, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
 	
 	config.Read("Single/RemoveHalos", &value, false);
 	removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
@@ -478,6 +489,7 @@ bool DDSOptionsDialog::Validate()
 	config.Write("Single/UseDXTC", useDXTC->GetValue() == 1);
 	config.Write("Single/GenerateMipmaps", generateMipmaps->GetValue() == 1);
 	config.Write("Single/ReconstructColors", reconstructColors->GetValue() == 1);
+	config.Write("Single/PremultiplyAlpha", premultiplyAlpha->GetValue() == 1);
 	config.Write("Single/RemoveHalos", removeHalos->GetValue() == 1);
 	config.Write("Single/BackgroundColor/R", (long) backgroundColor.Red());
 	config.Write("Single/BackgroundColor/G", (long) backgroundColor.Green());

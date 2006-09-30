@@ -14,6 +14,7 @@
 #define wxIMAGE_OPTION_DDS_USE_MIPMAPS wxT("DdsMipmap")
 #define wxIMAGE_OPTION_DDS_FORMAT wxT("DdsFormat")
 #define wxIMAGE_OPTION_DDS_COMPRESS wxT("DdsCompress")
+#define wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA wxT("DdsPremultiplyAlpha")
 
 #ifndef __DDRAW_INCLUDED__
 

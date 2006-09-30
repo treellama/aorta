@@ -29,12 +29,9 @@
 #include <squish.h>
 
 #include "math.h"
+#include <algorithm>
 #include <vector>
 using namespace std;
-
-#ifndef MAX
-#define MAX(x, y) (y < x ? x : y)
-#endif
 
 #define MAKE_FOURCC(a,b,c,d) (((wxUint32(d) << 24) | (wxUint32)(c) << 16) | ((wxUint32)(b) << 8) | (wxUint32)(a))
 
@@ -154,12 +151,32 @@ bool wxDDSHandler::DoCanRead(wxInputStream& stream)
     }
     else if (HasS3TC() && (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
 	     (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1') ||
+	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '2') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3') ||
+	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '4') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '5')))
 	return TRUE;
     else
 	return FALSE;
     
+}
+
+static void UnpremultiplyAlpha(wxImage *image)
+{
+    for (int x = 0; x < image->GetWidth(); x++) {
+	for (int y = 0; y < image->GetHeight(); y++) {
+	    if (image->GetAlpha(x, y) == 0) continue;
+	    short red = image->GetRed(x, y);
+	    short green = image->GetGreen(x, y);
+	    short blue = image->GetBlue(x, y);
+
+	    red = std::min(255, 255 * red / image->GetAlpha(x, y));
+	    green = std::min(255, 255 * green / image->GetAlpha(x, y));
+	    blue = std::min(255, 255 * blue / image->GetAlpha(x, y));
+
+	    image->SetRGB(x, y, (unsigned char) red, (unsigned char) green, (unsigned char) blue);
+	}
+    }
 }
 
 bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose, int index)
@@ -173,13 +190,23 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     DDSURFACEDESC2 ddsd;
     if (!ReadHeader(stream, ddsd)) return FALSE;
     
+    bool unpremultiplyAlpha = false;
+    
     // just read the first mipmap
     GLenum internalFormat = GL_NONE;
     if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
 	if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1'))
 	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '2')) {
+	    unpremultiplyAlpha = true;
+	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	}
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3'))
 	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '4')) {
+	    unpremultiplyAlpha = true;
+	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	}
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '5'))
 	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
     } else if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
@@ -282,7 +309,27 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	
     }
 
+    if (unpremultiplyAlpha)
+	UnpremultiplyAlpha(image);
+
     return TRUE;
+}
+
+static void PremultiplyAlpha(wxImage *image)
+{
+    for (int x = 0; x < image->GetWidth(); x++) {
+	for (int y = 0; y < image->GetHeight(); y++) {
+	    short red = image->GetRed(x, y);
+	    short green = image->GetGreen(x, y);
+	    short blue = image->GetBlue(x, y);
+	    
+	    red = (image->GetAlpha(x, y) * red + 127) / 255;
+	    green = (image->GetAlpha(x, y) * green + 127) / 255;
+	    blue = (image->GetAlpha(x, y) * blue + 127) / 255;
+	    
+	    image->SetRGB(x, y, (unsigned char) red, (unsigned char) green, (unsigned char) blue);
+	}    
+    }
 }
 
 bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose)
@@ -291,6 +338,8 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
     bool compress = image->HasOption(wxIMAGE_OPTION_DDS_COMPRESS) &&
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_COMPRESS);
+    bool premultiply = image->HasOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA) &&
+	image->GetOptionInt(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA);
 
     if (!HasS3TC() && compress) return FALSE;
 
@@ -313,7 +362,10 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	    ddsd.dwFlags |= DDSD_LINEARSIZE;
 	    if (image->HasAlpha()) {
 		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
-		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
+		if (premultiply)
+		    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '4');
+		else
+		    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
 	    } else {
 		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
 		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
@@ -355,6 +407,9 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	if (mipmap) ddsd.ddsCaps.dwCaps1 |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
 	
 	WriteHeader(stream, ddsd);
+
+	if (premultiply) 
+	    PremultiplyAlpha(image);
 	wxImage minImage = *image;
 	
 	for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
@@ -374,7 +429,7 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 
 int wxDDSHandler::NumMipmaps(const wxImage &image)
 {
-    return (1 + (int) floor(log(MAX(image.GetWidth(), image.GetHeight())) / log(2)));
+    return (1 + (int) floor(log(std::max(image.GetWidth(), image.GetHeight())) / log(2)));
 }
 
 static vector<unsigned char> BuildRGBAImage(const wxImage& image)
@@ -429,7 +484,7 @@ void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
 wxImage wxDDSHandler::Minify(wxImage &image)
 {
     wxImage minifiedImage;
-    minifiedImage.Create(MAX(image.GetWidth() >> 1, 1), MAX(image.GetHeight() >> 1, 1));
+    minifiedImage.Create(std::max(image.GetWidth() >> 1, 1), std::max(image.GetHeight() >> 1, 1));
 
     gluScaleImage(GL_RGB, image.GetWidth(), image.GetHeight(), GL_UNSIGNED_BYTE, image.GetData(), minifiedImage.GetWidth(), minifiedImage.GetHeight(), GL_UNSIGNED_BYTE, minifiedImage.GetData());
     
