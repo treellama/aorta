@@ -245,3 +245,21 @@ void wxImageExt::PrepareForMipmaps()
 
     *this = result;
 }
+
+void wxImageExt::UnpremultiplyAlpha()
+{
+	for (int x = 0; x < GetWidth(); x++) {
+	for (int y = 0; y < GetHeight(); y++) {
+	    if (GetAlpha(x, y) == 0) continue;
+	    short red = GetRed(x, y);
+	    short green = GetGreen(x, y);
+	    short blue = GetBlue(x, y);
+
+	    red = std::min(255, 255 * red / GetAlpha(x, y));
+	    green = std::min(255, 255 * green / GetAlpha(x, y));
+	    blue = std::min(255, 255 * blue / GetAlpha(x, y));
+
+	    SetRGB(x, y, (unsigned char) red, (unsigned char) green, (unsigned char) blue);
+	}
+    }
+}
