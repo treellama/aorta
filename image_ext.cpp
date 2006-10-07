@@ -164,16 +164,17 @@ void wxImageExt::PrepareForMipmaps()
     if (!HasAlpha()) return;
     wxBusyCursor();
 
-	wxImageExt result  = *this;
-	// scan for background pixels
-	int numBackgroundPixels = 0;
-	for (int x = 0; x < GetWidth(); x++) {
-		for (int y = 0; y < GetWidth(); y++) {
-			if (GetAlpha(x, y) == 0) {
-				numBackgroundPixels++;
-			}
-		}
+    wxImageExt result  = *this;
+    // scan for background pixels
+    int numBackgroundPixels = 0;
+    for (int x = 0; x < GetWidth(); x++) {
+	for (int y = 0; y < GetWidth(); y++) {
+	    if (GetAlpha(x, y) == 0) {
+		numBackgroundPixels++;
+	    }
 	}
+    }
+    
     wxProgressDialog pd(_T("Processing"), _T("Processing background pixels"), numBackgroundPixels, NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME);
 
     wxImageExt tempImage;

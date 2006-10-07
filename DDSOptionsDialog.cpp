@@ -23,8 +23,8 @@
 
 extern bool HasS3TC(); // from imagdds
 
-DDSOptionsDialog::DDSOptionsDialog()
-	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
+DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix)
+	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix)
 {
 
 	mipmapBox_staticbox = new wxStaticBox(this, -1, wxT("Mipmap Halo Removal Strategy"));
@@ -48,7 +48,7 @@ void DDSOptionsDialog::fill_from_prefs()
 	bool value;
 	if (HasS3TC())
 	{
-		config.Read("Single/UseDXTC", &value, true);
+		config.Read(m_prefix + "/UseDXTC", &value, true);
 		useDXTC->SetValue(value ? 1 : 0);
 	}
 	else
@@ -56,11 +56,11 @@ void DDSOptionsDialog::fill_from_prefs()
 		useDXTC->SetValue(0);
 	}
 	
-	config.Read("Single/GenerateMipmaps", &value, true);
+	config.Read(m_prefix + "/GenerateMipmaps", &value, true);
 	generateMipmaps->SetValue(value ? 1 : 0);
 
 	wxString haloRemovalStrategy;
-	config.Read("Single/HaloRemovalStrategy", &haloRemovalStrategy, "None");
+	config.Read(m_prefix + "/HaloRemovalStrategy", &haloRemovalStrategy, "None");
 	if (haloRemovalStrategy == "PremultiplyAlpha")
 	{
 		premultiplyAlpha->SetValue(1);
@@ -74,13 +74,13 @@ void DDSOptionsDialog::fill_from_prefs()
 		noHaloRemoval->SetValue(1);
 	}
 
-	config.Read("Single/ReconstructEdgeColors", &value, true);
+	config.Read(m_prefix + "/ReconstructEdgeColors", &value, true);
 	reconstructColors->SetValue(value ? 1 : 0);
 
 	long r, g, b;
-	config.Read("Single/BackgroundColor/R", &r, 0xff);
-	config.Read("Single/BackgroundColor/G", &g, 0xff);
-	config.Read("Single/BackgroundColor/B", &b, 0xff);
+	config.Read(m_prefix + "/BackgroundColor/R", &r, 0xff);
+	config.Read(m_prefix + "/BackgroundColor/G", &g, 0xff);
+	config.Read(m_prefix + "/BackgroundColor/B", &b, 0xff);
 	backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
 }
 
@@ -163,30 +163,30 @@ void DDSOptionsDialog::update_enablement()
 bool DDSOptionsDialog::Validate()
 {
 	wxConfig config;
-	config.Write("Single/UseDXTC", useDXTC->GetValue() == 1);
-	config.Write("Single/GenerateMipmaps", generateMipmaps->GetValue() == 1);
+	config.Write(m_prefix + "/UseDXTC", useDXTC->GetValue() == 1);
+	config.Write(m_prefix + "/GenerateMipmaps", generateMipmaps->GetValue() == 1);
 	if (generateMipmaps->GetValue())
 	{
 		if (noHaloRemoval->GetValue())
 		{
-			config.Write("Single/HaloRemovalStrategy", "None");
+			config.Write(m_prefix + "/HaloRemovalStrategy", "None");
 		}
 		else if (premultiplyAlpha->GetValue())
 		{
-			config.Write("Single/HaloRemovalStrategy", "PremultiplyAlpha");
+			config.Write(m_prefix + "/HaloRemovalStrategy", "PremultiplyAlpha");
 		} 
 		else if (colorFillBackground->GetValue())
 		{
-			config.Write("Single/HaloRemovalStrategy", "ColorFillBackground");
+			config.Write(m_prefix + "/HaloRemovalStrategy", "ColorFillBackground");
 		}
 
 		if (colorFillBackground->GetValue())
 		{
-			config.Write("Single/ReconstructColors", reconstructColors->GetValue() == 1);
+			config.Write(m_prefix + "/ReconstructColors", reconstructColors->GetValue() == 1);
 			
-			config.Write("Single/BackgroundColor/R", (long) backgroundColor.Red());
-			config.Write("Single/BackgroundColor/G", (long) backgroundColor.Green());
-			config.Write("Single/BackgroundColor/B", (long) backgroundColor.Blue());
+			config.Write(m_prefix + "/BackgroundColor/R", (long) backgroundColor.Red());
+			config.Write(m_prefix + "/BackgroundColor/G", (long) backgroundColor.Green());
+			config.Write(m_prefix + "/BackgroundColor/B", (long) backgroundColor.Blue());
 		}
 	}
 

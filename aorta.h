@@ -28,9 +28,12 @@
 #include <wx/checkbox.h>
 #include <wx/colordlg.h>
 #include <wx/config.h>
+#include <wx/dir.h>
+#include <wx/dirdlg.h>
 #ifdef wxUSE_DRAG_AND_DROP
 #include <wx/dnd.h>
 #endif
+#include <wx/filename.h>
 #include <wx/image.h>
 #include <wx/notebook.h>
 #include <wx/radiobox.h>
@@ -60,6 +63,7 @@ private:
 };
 
 class BasicPage;
+class BatchPage;
 
 class MainFrame: public wxFrame // MainFrame is the class for our window, 
 { 
@@ -68,6 +72,7 @@ public:
 	MainFrame(const wxString &title, const wxPoint &pos, const wxSize &size, long style); 
 	wxNotebook *notebook;
 	BasicPage *basicPage;
+	BatchPage *batchPage;
 	wxMenuBar *menuBar;
 	wxMenu *fileMenu;
 	void OnExit(wxCommandEvent& event);
@@ -81,7 +86,7 @@ public:
 
 }; 
 
-class BasicPage: public wxNotebookPage
+class BasicPage: public wxPanel
 {
 public: 
 	BasicPage(wxWindow* parent, wxWindowID id, const wxPoint &pos, const wxSize &size);
@@ -125,6 +130,41 @@ private:
 	wxButton *saveAsButton;
 };
 
+class BatchPage : public wxPanel
+{
+public:
+	BatchPage(wxWindow* parent, wxWindowID id, const wxPoint &pos, const wxSize &size);
+
+	void OnChooseFiles(wxCommandEvent &);
+	void OnChooseDestination(wxCommandEvent &);
+	
+	void ChooseFiles(const wxArrayString& files);
+	void ChooseDestination(const wxString &folder);
+
+	void OnConvert(wxCommandEvent &);
+
+	void SaveFindMaskConfig(wxCommandEvent &);
+
+        DECLARE_EVENT_TABLE()
+
+private:
+	void do_layout();
+
+	wxButton *chooseFiles;
+	wxStaticText *fileStatus;
+
+	wxCheckBox *findMasks;
+	wxTextCtrl *maskString;
+
+	wxButton *selectDestination;
+	wxStaticText *destinationStatus;
+
+	wxButton *convert;
+
+	wxArrayString filesToConvert;
+	wxString destination;
+};
+
 #if wxUSE_DRAG_AND_DROP
 class DnDNormalImage : public wxFileDropTarget
 {
@@ -148,6 +188,28 @@ public:
 private:
 	BasicPage *m_page;
 };
+
+class DnDBatchFiles : public wxFileDropTarget
+{
+public:
+	DnDBatchFiles(BatchPage *page) { m_page = page; }
+
+	virtual bool OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames);
+private:
+	BatchPage *m_page;
+};
+
+class DnDBatchDestination : public wxFileDropTarget
+{
+public:
+	DnDBatchDestination(BatchPage *page) { m_page = page; }
+
+	virtual bool OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames);
+private:
+	BatchPage *m_page;
+};
+
+
 #endif
 
 enum
@@ -166,7 +228,13 @@ enum
 	BUTTON_PremultiplyAlpha,
 	BUTTON_ColorFillBackground,
 	BUTTON_GenerateMipmaps,
-	BUTTON_ReconstructColors
+	BUTTON_ReconstructColors,
+
+	BUTTON_ChooseFiles,
+	BUTTON_ChooseDestination,
+	BUTTON_Convert,
+	BUTTON_FindMasks,
+	TEXT_MaskString
 };
 
 
