@@ -19,6 +19,7 @@
  
 */
 #include "aorta.h" 
+#include "DDSOptionsDialog.h"
 #include "imagdds.h"
 
 IMPLEMENT_APP(MainApp)  
@@ -259,32 +260,33 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 		DDSOptionsDialog ddsOptions;
 		if (ddsOptions.ShowModal() != wxID_OK) return;
 	
-		if (ddsOptions.reconstructColors->GetValue()) {
-			saveImage.ReconstructColors(ddsOptions.backgroundColor);
-		}
-
-		if (ddsOptions.removeHalos->GetValue()) {
-			saveImage.PrepareForMipmaps();
-		}
-
 		if (ddsOptions.generateMipmaps->GetValue()) {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+			
+			if (ddsOptions.premultiplyAlpha->GetValue()) {
+				saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
+			} else {
+				saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
+			}
+
+			if (ddsOptions.colorFillBackground->GetValue()) {
+				if (ddsOptions.reconstructColors->GetValue()) {
+					saveImage.ReconstructColors(ddsOptions.backgroundColor);
+				}
+
+				saveImage.PrepareForMipmaps();
+			}
+			
 		} else {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
 		}
 
-		if (ddsOptions.useDXTC->GetValue()) {
+		if (HasS3TC() && ddsOptions.useDXTC->GetValue()) {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
 		} else {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
 		}
 
-		if (ddsOptions.premultiplyAlpha->GetValue()) {
-			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
-		} else {
-			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
-		}
-	
 		saveImage.SaveFile(saveFileDialog->GetPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
 	}
 }
@@ -417,99 +419,6 @@ void BasicPage::UpdateMaskDisplay()
 	
 }
 
-DDSOptionsDialog::DDSOptionsDialog()
-	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize)
-{
-
-	wxConfig config;
-	wxBoxSizer *topSizer = new wxBoxSizer(wxVERTICAL);
-	backgroundColor.Set(0xff, 0xff, 0xff);
-	
-	useDXTC = new wxCheckBox(this, -1, _T("Use DXTC"), wxDefaultPosition, wxDefaultSize);
-	bool value;
-	if (HasS3TC()) 
-	{
-		config.Read("Single/UseDXTC", &value, true);
-		useDXTC->SetValue(value ? 1 : 0);
-	} 
-	else 
-	{
-		useDXTC->SetValue(0);
-		useDXTC->Enable(false);
-	}
-	topSizer->Add(useDXTC, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-	
-	long r, g, b;
-	
-	config.Read("Single/BackgroundColor/R", &r, 0xff);
-	config.Read("Single/BackgroundColor/G", &g, 0xff);
-	config.Read("Single/BackgroundColor/B", &b, 0xff);
-	backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
-	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, _T("Choose background..."));
-	topSizer->Add(chooseBackground, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-	
-	config.Read("Single/GenerateMipmaps", &value, true);
-	generateMipmaps = new wxCheckBox(this, -1, _T("Generate Mipmaps"), wxDefaultPosition, wxDefaultSize);
-	generateMipmaps->SetValue(value ? 1 : 0);
-	topSizer->Add(generateMipmaps, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, 10);
-	
-	config.Read("Single/ReconstructColors", &value, true);
-	reconstructColors = new wxCheckBox(this, -1, _T("Reconstruct colors"), wxDefaultPosition, wxDefaultSize);
-	reconstructColors->SetValue(value ? 1 : 0);
-	topSizer->Add(reconstructColors, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
-
-	config.Read("Single/PremultiplyAlpha", &value, false);
-	premultiplyAlpha = new wxCheckBox(this, -1, _T("Premultiply Alpha"), wxDefaultPosition, wxDefaultSize);
-	premultiplyAlpha->SetValue(value ? 1 : 0);
-	topSizer->Add(premultiplyAlpha, 1, wxEXPAND | wxLEFT | wxRIGHT, 10);
-	
-	config.Read("Single/RemoveHalos", &value, false);
-	removeHalos = new wxCheckBox(this, -1, _T("Halo removal (experimental and VERY slow)"), wxDefaultPosition, wxDefaultSize);
-	removeHalos->SetValue(value ? 1 : 0);
-	topSizer->Add(removeHalos, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-	wxButton *cancelButton = new wxButton(this, wxID_CANCEL);
-	buttonSizer->Add(cancelButton, 1, wxEXPAND | wxALL, 10);
-	wxButton *okButton = new wxButton(this, wxID_OK);
-	okButton->SetDefault();
-	buttonSizer->Add(okButton, 1, wxEXPAND | wxALL, 10);
-	
-	topSizer->Add(buttonSizer, 1, wxEXPAND);
-	
-	
-	SetAutoLayout(TRUE);
-	SetSizer(topSizer);
-	topSizer->Fit(this);
-	topSizer->SetSizeHints(this);
-}
-
-bool DDSOptionsDialog::Validate()
-{
-	wxConfig config;
-	config.Write("Single/UseDXTC", useDXTC->GetValue() == 1);
-	config.Write("Single/GenerateMipmaps", generateMipmaps->GetValue() == 1);
-	config.Write("Single/ReconstructColors", reconstructColors->GetValue() == 1);
-	config.Write("Single/PremultiplyAlpha", premultiplyAlpha->GetValue() == 1);
-	config.Write("Single/RemoveHalos", removeHalos->GetValue() == 1);
-	config.Write("Single/BackgroundColor/R", (long) backgroundColor.Red());
-	config.Write("Single/BackgroundColor/G", (long) backgroundColor.Green());
-	config.Write("Single/BackgroundColor/B", (long) backgroundColor.Blue());
-
-	return TRUE;
-}
-
-void DDSOptionsDialog::OnChooseBackground(wxCommandEvent &)
-{
-	wxColourData data;
-	data.SetColour(backgroundColor);
-	wxColourDialog dialog(this, &data);
-	if (dialog.ShowModal() == wxID_OK)
-	{
-		wxColourData redData = dialog.GetColourData();
-		backgroundColor = redData.GetColour();
-	}
-}
-
 bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
 	if (filenames[0])
@@ -521,3 +430,19 @@ bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 	if (filenames[0])
 		m_page->LoadMask(filenames[0]);
 }
+
+BEGIN_EVENT_TABLE(MainFrame, wxFrame)
+EVT_MENU(wxID_EXIT, MainFrame::OnExit)
+EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
+EVT_MENU(MENU_LoadNormal, MainFrame::OnLoadNormal)
+EVT_MENU(MENU_SaveAs, MainFrame::OnSaveAs)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)
+EVT_BUTTON(BUTTON_NormalImage, BasicPage::OnLoadNormal)
+EVT_BUTTON(BUTTON_MaskImage, BasicPage::OnLoadMask)
+EVT_BUTTON(BUTTON_ClearMask, BasicPage::OnClearMask)
+EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
+EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
+EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
+END_EVENT_TABLE()
