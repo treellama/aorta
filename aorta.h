@@ -92,6 +92,7 @@ public:
 	void OnOpacTypeTwo(wxCommandEvent &);
 	void OnOpacTypeThree(wxCommandEvent &);
 	void OnSaveAs(wxCommandEvent &);
+	void OnUnpremultiplyAlpha(wxCommandEvent &);
 
 	void LoadNormal(const wxString& path);
 	void LoadMask(const wxString& path);
@@ -107,6 +108,7 @@ private:
 	wxImageExt normalImage;
 	wxImageExt normalImageDisplay;
 	wxButton *normalImageButton;
+	wxButton *unpremultiplyAlpha;
 	wxStaticBitmap *normalImageStatic;
 	wxStaticText *normalImageSize;
 	wxStaticText *normalImageFilename;
@@ -153,6 +155,7 @@ enum
 	MENU_LoadNormal = wxID_HIGHEST + 1,
 	MENU_SaveAs,
 	BUTTON_NormalImage,
+	BUTTON_UnpremultiplyAlpha,
 	BUTTON_MaskImage,
 	BUTTON_ClearMask,
 	BUTTON_OpacTypeTwo,

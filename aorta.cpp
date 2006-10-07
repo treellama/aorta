@@ -130,7 +130,10 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	column[0]->Add(normalImageSize, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	normalImageButton = new wxButton(this, BUTTON_NormalImage, _T("Load normal..."));
 	column[0]->Add(normalImageButton, 0, wxALIGN_CENTER | wxALL, 10);
-
+	
+	unpremultiplyAlpha = new wxButton(this, BUTTON_UnpremultiplyAlpha, _T("Un-Premultiply Alpha"));
+	column[0]->Add(unpremultiplyAlpha, 0, wxALIGN_CENTER | wxALL, 10);
+	
 	pageSizer->Add(column[0], 0, wxEXPAND | wxALL, 10);
 	
 	column[1] = new wxBoxSizer(wxVERTICAL);
@@ -232,6 +235,12 @@ void BasicPage::OnOpacTypeThree(wxCommandEvent &)
 	maskImage = normalImage;
 	maskImage.MakeOpacTypeThree();
 	UpdateMaskDisplay();
+}
+
+void BasicPage::OnUnpremultiplyAlpha(wxCommandEvent &)
+{
+	normalImage.UnpremultiplyAlpha();
+	UpdateNormalDisplay();
 }
 
 void BasicPage::OnSaveAs(wxCommandEvent &)
@@ -465,4 +474,5 @@ EVT_BUTTON(BUTTON_ClearMask, BasicPage::OnClearMask)
 EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
 EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
 EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
+EVT_BUTTON(BUTTON_UnpremultiplyAlpha, BasicPage::OnUnpremultiplyAlpha)
 END_EVENT_TABLE()
