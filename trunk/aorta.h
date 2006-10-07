@@ -148,28 +148,6 @@ private:
 };
 #endif
 
-class DDSOptionsDialog : public wxDialog
-{
-public:
-	DDSOptionsDialog();
-
-	wxCheckBox *useDXTC;
-
-	wxCheckBox *generateMipmaps;
-	wxCheckBox *removeHalos;
-	wxCheckBox *reconstructColors;
-	wxCheckBox *premultiplyAlpha;
-	
-	wxButton *chooseBackground;
-	wxColour backgroundColor;
-	
-	void OnChooseBackground(wxCommandEvent &);
-private:
-	bool Validate();
-	
-	DECLARE_EVENT_TABLE()
-};
-
 enum
 {
 	MENU_LoadNormal = wxID_HIGHEST + 1,
@@ -180,27 +158,14 @@ enum
 	BUTTON_OpacTypeTwo,
 	BUTTON_OpacTypeThree,
 	BUTTON_SaveAs,
-	BUTTON_ChooseBackground
+	BUTTON_ChooseBackground,
+	BUTTON_NoHaloRemoval,
+	BUTTON_PremultiplyAlpha,
+	BUTTON_ColorFillBackground,
+	BUTTON_GenerateMipmaps,
+	BUTTON_ReconstructColors
 };
 
-BEGIN_EVENT_TABLE(MainFrame, wxFrame)
-EVT_MENU(wxID_EXIT, MainFrame::OnExit)
-EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
-EVT_MENU(MENU_LoadNormal, MainFrame::OnLoadNormal)
-EVT_MENU(MENU_SaveAs, MainFrame::OnSaveAs)
-END_EVENT_TABLE()
 
-BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)
-EVT_BUTTON(BUTTON_NormalImage, BasicPage::OnLoadNormal)
-EVT_BUTTON(BUTTON_MaskImage, BasicPage::OnLoadMask)
-EVT_BUTTON(BUTTON_ClearMask, BasicPage::OnClearMask)
-EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
-EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
-EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
-END_EVENT_TABLE()
-
-BEGIN_EVENT_TABLE(DDSOptionsDialog, wxDialog)
-EVT_BUTTON(BUTTON_ChooseBackground, DDSOptionsDialog::OnChooseBackground)
-END_EVENT_TABLE()
 
 #endif
