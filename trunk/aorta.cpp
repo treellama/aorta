@@ -178,9 +178,12 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 
 void BasicPage::OnLoadNormal(wxCommandEvent &)
 {
+	wxConfig config;
+	wxString Directory;
+	config.Read("Single/DefaultDirectory/Load", &Directory, "");
 	wxFileDialog *openFileDialog = new wxFileDialog( this,
 							 _("Choose Image"),
-							 _(""),
+							 Directory,
 							 _(""),
 							 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
 							 wxOPEN | wxCHANGE_DIR,
@@ -194,6 +197,10 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 
 void BasicPage::OnLoadMask(wxCommandEvent &)
 {
+	
+	wxConfig config;
+	wxString Directory;
+	config.Read("Single/DefaultDirectory/Load", &Directory, "");
 	wxFileDialog *openFileDialog = new wxFileDialog(this,
 							_T("Choose Mask"),
 							_T(""),
@@ -230,14 +237,21 @@ void BasicPage::OnOpacTypeThree(wxCommandEvent &)
 void BasicPage::OnSaveAs(wxCommandEvent &)
 {
 	if (!normalImage.Ok()) return;
+
+	wxConfig config;
+	wxString Directory;
+	config.Read("Single/DefaultDirectory/Save", &Directory, "");
 	wxFileDialog *saveFileDialog = new wxFileDialog(this,
 							_T("Save As"),
-							_T(""),
+							Directory,
 							(normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
 							_T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
 							wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
 							wxDefaultPosition);
 	if (saveFileDialog->ShowModal() != wxID_OK) return;
+
+	Directory = saveFileDialog->GetFilename().BeforeLast('/');
+	config.Write("Single/DefaultDirectory/Save", Directory);
     
 	wxImageExt saveImage = normalImage;
 	if (maskImage.Ok())
@@ -293,6 +307,9 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 
 void BasicPage::LoadNormal(const wxString& path)
 {
+	wxConfig config;
+	config.Write("Single/DefaultDirectory/Load", path.BeforeLast('/'));
+
 	normalImage.LoadFile(path);
 	if (normalImage.Ok())
 	{
@@ -327,6 +344,9 @@ void BasicPage::LoadNormal(const wxString& path)
 
 void BasicPage::LoadMask(const wxString& path)
 {
+	wxConfig config;
+	config.Write("Single/DefaultDirectory/Load", path.BeforeLast('/'));
+
 	maskImage.LoadFile(path);
 	if (maskImage.Ok())
 	{
