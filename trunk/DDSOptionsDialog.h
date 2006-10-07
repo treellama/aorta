@@ -47,7 +47,7 @@
 class DDSOptionsDialog : public wxDialog
 {
 public:
-	DDSOptionsDialog();
+	DDSOptionsDialog(const wxString& preferencesPrefix = "Single");
 
 	wxStaticBox* mipmapBox_staticbox;
 	wxCheckBox* useDXTC;
@@ -63,6 +63,7 @@ public:
 	void OnChooseBackground(wxCommandEvent &);
 	void OnUpdateEnablement(wxCommandEvent &);
 private:
+	wxString m_prefix;
 	void fill_from_prefs();
 	void do_layout();
 	void update_enablement();

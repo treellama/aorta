@@ -68,11 +68,15 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 	
 	wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 	notebook = new wxNotebook(this, -1);
-	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 	
 	basicPage = new BasicPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
-	notebook->AddPage(basicPage, _("Basic"), true);
-	
+	notebook->AddPage(basicPage, _("Compose"), true);
+
+	batchPage = new BatchPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
+	notebook->AddPage(batchPage, _("Batch Convert"), false);
+
+	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+
 	SetAutoLayout(TRUE);
 	SetSizer(topsizer);
 	topsizer->Fit(this);
@@ -110,7 +114,7 @@ void MainFrame::LoadNormal(const wxString& path)
 }
 
 BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
-  : wxNotebookPage(parent, id, pos, size)
+  : wxPanel(parent, id, pos, size)
 {
 	wxBoxSizer *pageSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer *column[2];
@@ -448,6 +452,238 @@ void BasicPage::UpdateMaskDisplay()
 	
 }
 
+BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const wxSize &size)
+	: wxPanel(parent, id, pos, size)
+{
+	wxConfig config;
+	chooseFiles = new wxButton(this, BUTTON_ChooseFiles, wxT("Choose Files..."));
+	fileStatus = new wxStaticText(this, -1, wxT("No files selected"));
+	findMasks = new wxCheckBox(this, BUTTON_FindMasks, wxT("Attempt to find masks"));
+	bool value;
+	config.Read("Batch/FindMasks", &value, false);
+	findMasks->SetValue(value ? 1 : 0);
+	maskString = new wxTextCtrl(this, TEXT_MaskString);
+	wxString mask;
+	config.Read("Batch/MaskString", &mask, "^mask$");
+	maskString->SetValue(mask);
+	
+	selectDestination = new wxButton(this, BUTTON_ChooseDestination, wxT("Choose Destination..."));
+
+	config.Read("Batch/Destination", &destination, "");
+	if (destination == "")
+		destinationStatus = new wxStaticText(this, -1, wxT("No destination chosen"));
+	else
+		destinationStatus = new wxStaticText(this, -1, destination);
+
+	convert = new wxButton(this, BUTTON_Convert, wxT("Batch Convert..."));
+
+	do_layout();
+}
+
+void BatchPage::do_layout()
+{
+	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
+	wxStaticBox *chooseFilesStaticBox = new wxStaticBox(this, -1, wxT("Drop Files to Choose Sources"));
+	chooseFilesStaticBox->SetDropTarget(new DnDBatchFiles(this));
+	wxStaticBoxSizer* chooseFilesBox = new wxStaticBoxSizer(chooseFilesStaticBox, wxHORIZONTAL);
+	chooseFilesBox->Add(chooseFiles, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseFilesBox->Add(fileStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	topSizer->Add(chooseFilesBox, 0, wxALL | wxEXPAND, 10);
+
+	wxStaticBoxSizer* chooseMasksBox = new wxStaticBoxSizer(new wxStaticBox(this, -1, wxT("Choose Masks")), wxVERTICAL);
+	chooseMasksBox->Add(findMasks, 0, wxALL, 10);
+	chooseMasksBox->Add(maskString, 0, wxLEFT | wxRIGHT | wxEXPAND, 10);
+	wxStaticText *maskStringHelp = new wxStaticText(this, -1, wxT("Use ^ for file name and $ for extension; e.g. 1.png and ^A$ -> 1A.png"));
+	wxFont helpFont = maskStringHelp->GetFont();
+	helpFont.SetStyle(wxFONTSTYLE_ITALIC);
+	maskStringHelp->SetFont(helpFont);
+	chooseMasksBox->Add(maskStringHelp, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
+	topSizer->Add(chooseMasksBox, 0, wxALL | wxEXPAND, 10);
+
+	wxStaticBox *chooseDestinationStaticBox = new wxStaticBox(this, -1, wxT("Drop Folder to Choose Destination"));
+	chooseDestinationStaticBox->SetDropTarget(new DnDBatchDestination(this));
+	wxStaticBoxSizer* chooseDestinationBox = new wxStaticBoxSizer(chooseDestinationStaticBox, wxHORIZONTAL);
+	chooseDestinationBox->Add(selectDestination, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	topSizer->Add(chooseDestinationBox, 0, wxALL | wxEXPAND, 10);
+	topSizer->Add(convert, 0, wxALL, 10);
+	
+	SetAutoLayout(true);
+	SetSizer(topSizer);
+	topSizer->Fit(this);
+	topSizer->SetSizeHints(this);
+	Layout();
+}
+
+void BatchPage::OnChooseFiles(wxCommandEvent &)
+{
+	wxFileDialog *openFileDialog = new wxFileDialog(this,
+							_("Choose Images"),
+							_(""),
+							_(""),
+							_("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
+							wxOPEN | wxCHANGE_DIR | wxMULTIPLE,
+							wxDefaultPosition);
+	if (openFileDialog->ShowModal() == wxID_OK)
+	{
+		wxArrayString filenames;
+		openFileDialog->GetFilenames(filenames);
+		ChooseFiles(filenames);
+	}
+}
+
+void BatchPage::ChooseFiles(const wxArrayString& filenames)
+{
+	filesToConvert = filenames;
+	filesToConvert.Clear();
+	for (int i = 0; i < filenames.Count(); i++)
+	{
+		wxFileName filename = filenames[i];
+		if (filename.GetName()[0] != '.')
+			filesToConvert.Add(filenames[i]);
+	}
+
+	wxString fileString;
+	if (filesToConvert.Count() == 0)
+		fileString = "No files selected";
+	else if (filesToConvert.Count() == 1)
+		fileString = "1 file selected";
+	else
+		fileString.Printf("%i files selected", filesToConvert.Count());
+	fileStatus->SetLabel(fileString);
+}
+
+void BatchPage::OnChooseDestination(wxCommandEvent &)
+{
+	wxDirDialog *openDirDialog = new wxDirDialog(this,
+						     _("Choose a destination folder"));
+	if (openDirDialog->ShowModal() == wxID_OK)
+	{
+		ChooseDestination(openDirDialog->GetPath());
+	}
+						    
+}
+
+void BatchPage::ChooseDestination(const wxString& folder)
+{
+	destination = folder;
+	wxConfig config;
+	config.Write("Batch/Destination", destination);
+	destinationStatus->SetLabel(folder);
+}
+
+void BatchPage::OnConvert(wxCommandEvent &)
+{
+	if (filesToConvert.Count() == 0) return;
+	if (!wxDir::Exists(destination)) return;
+
+	bool useMasks = findMasks->GetValue();
+
+	if (useMasks)
+	{
+		// for each file in this list, we need to remove the corresponding mask
+		wxArrayString listIncludingMasks = filesToConvert;
+		for (int i = 0; i < listIncludingMasks.Count(); i++)
+		{
+			wxFileName filename = listIncludingMasks[i];
+			wxString mask = maskString->GetValue();
+			mask.Replace("^", filename.GetPath() + wxFileName::GetPathSeparator() + filename.GetName(), false);
+			if (filename.GetExt() != "")
+				mask.Replace("$", ("." + filename.GetExt()), false);
+			else
+				mask.Replace("$", "");
+
+			int loc = filesToConvert.Index(mask);
+			if (loc != wxNOT_FOUND)
+			{
+				filesToConvert.RemoveAt(loc);
+			}
+		}
+	}
+
+	// get the DDS options
+	DDSOptionsDialog ddsOptions("Batch");
+	if (ddsOptions.ShowModal() != wxID_OK) return;
+	
+	wxProgressDialog pd(_T("Converting"), _T("Converting"), filesToConvert.Count(), NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME | wxPD_CAN_ABORT);
+	for (int i = 0; i < filesToConvert.Count(); i++)
+	{
+		if (!pd.Update(i)) break;
+		wxImageExt normalImage;
+		wxImageExt maskImage;
+
+		wxFileName normalFile = filesToConvert[i];
+		wxString mask = maskString->GetValue();
+		mask.Replace("^", normalFile.GetPath() + wxFileName::GetPathSeparator() + normalFile.GetName(), false);
+		mask.Replace("$", ("." + normalFile.GetExt()), false);
+		wxFileName maskFile = mask;
+		wxFileName saveFile = (destination + wxFileName::GetPathSeparator() + normalFile.GetName() + ".dds");
+
+		if (normalFile.GetName()[0] == '.') continue;
+		if (!normalImage.LoadFile(normalFile.GetFullPath())) continue;
+		if (!normalImage.Ok()) continue;
+		if (wxFileName::FileExists(maskFile.GetFullPath()))
+		{
+			maskImage.LoadFile(maskFile.GetFullPath());
+			if (maskImage.Ok())
+			{
+				if (maskImage.GetWidth() == normalImage.GetWidth() && maskImage.GetHeight() == normalImage.GetHeight())
+				{
+					maskImage.MakeOpacTypeTwo();
+					maskImage.ToAlpha(normalImage);
+				}
+			}
+		}
+
+		// set the image options
+		if (ddsOptions.generateMipmaps->GetValue())
+		{
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+			if (ddsOptions.premultiplyAlpha->GetValue())
+			{
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
+			}
+			else
+			{
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
+			}
+
+			if (ddsOptions.colorFillBackground->GetValue())
+			{
+				if (ddsOptions.reconstructColors->GetValue())
+					normalImage.ReconstructColors(ddsOptions.backgroundColor);
+			}
+
+			normalImage.PrepareForMipmaps();
+		}
+		else
+		{
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
+		}
+
+		if (HasS3TC() && ddsOptions.useDXTC->GetValue())
+		{
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
+		} 
+		else
+		{
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
+		}
+
+		normalImage.SaveFile(saveFile.GetFullPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
+
+	}
+}
+
+void BatchPage::SaveFindMaskConfig(wxCommandEvent &)
+{
+	wxConfig config;
+	config.Write("Batch/FindMasks", findMasks->GetValue() == 1);
+	config.Write("Batch/MaskString", maskString->GetValue());
+}
+
+#if wxUSE_DRAG_AND_DROP
+
 bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
 	if (filenames[0])
@@ -460,6 +696,37 @@ bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 		m_page->LoadMask(filenames[0]);
 }
 
+bool DnDBatchFiles::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
+{
+	// convert directories to files!
+	wxArrayString finalAnswer;
+	for (int i = 0; i < filenames.Count(); i++)
+	{
+		wxFileName filename = filenames[i];
+		if (!filename.IsOk()) continue;
+		if (filename.FileExists())
+		{
+			finalAnswer.Add(filenames[i]);
+		}
+		else 
+		{
+			if (wxDir::Exists(filenames[i]))
+			{
+				wxDir::GetAllFiles(filenames[i], &finalAnswer);
+			}
+		}
+	}
+
+	m_page->ChooseFiles(finalAnswer);
+}
+
+bool DnDBatchDestination::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
+{
+	if (filenames[0] && wxFileName(filenames[0]).DirExists())
+		m_page->ChooseDestination(filenames[0]);
+}
+#endif
+
 BEGIN_EVENT_TABLE(MainFrame, wxFrame)
 EVT_MENU(wxID_EXIT, MainFrame::OnExit)
 EVT_MENU(wxID_ABOUT, MainFrame::OnAbout)
@@ -467,7 +734,7 @@ EVT_MENU(MENU_LoadNormal, MainFrame::OnLoadNormal)
 EVT_MENU(MENU_SaveAs, MainFrame::OnSaveAs)
 END_EVENT_TABLE()
 
-BEGIN_EVENT_TABLE(BasicPage, wxNotebookPage)
+BEGIN_EVENT_TABLE(BasicPage, wxPanel)
 EVT_BUTTON(BUTTON_NormalImage, BasicPage::OnLoadNormal)
 EVT_BUTTON(BUTTON_MaskImage, BasicPage::OnLoadMask)
 EVT_BUTTON(BUTTON_ClearMask, BasicPage::OnClearMask)
@@ -475,4 +742,12 @@ EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
 EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
 EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
 EVT_BUTTON(BUTTON_UnpremultiplyAlpha, BasicPage::OnUnpremultiplyAlpha)
+END_EVENT_TABLE()
+
+BEGIN_EVENT_TABLE(BatchPage, wxPanel)
+EVT_BUTTON(BUTTON_ChooseFiles, BatchPage::OnChooseFiles)
+EVT_BUTTON(BUTTON_ChooseDestination, BatchPage::OnChooseDestination)
+EVT_BUTTON(BUTTON_Convert, BatchPage::OnConvert)
+EVT_BUTTON(BUTTON_FindMasks, BatchPage::SaveFindMaskConfig)
+EVT_TEXT(TEXT_MaskString, BatchPage::SaveFindMaskConfig)
 END_EVENT_TABLE()
