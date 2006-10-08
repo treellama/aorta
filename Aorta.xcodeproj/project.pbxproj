@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AE0D48060AD8761E00FD3D5E /* DDSOptionsDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0D48040AD8761E00FD3D5E /* DDSOptionsDialog.cpp */; };
 		AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */; };
 		AEA152AC0AC9DFEB00E8890F /* Aorta File.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */; };
 		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
@@ -17,11 +18,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		AE0D48040AD8761E00FD3D5E /* DDSOptionsDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DDSOptionsDialog.cpp; sourceTree = "<group>"; };
+		AE0D48050AD8761E00FD3D5E /* DDSOptionsDialog.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DDSOptionsDialog.h; sourceTree = "<group>"; };
 		AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Aorta File.icns"; sourceTree = "<group>"; };
 		AEBF58240A1025ED00C810B8 /* Aorta.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Aorta.icns; sourceTree = "<group>"; };
 		AEBF5B6B0A163E6300C810B8 /* image_ext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = image_ext.h; sourceTree = "<group>"; };
 		AEBF5BA90A1642D200C810B8 /* image_ext.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = image_ext.cpp; sourceTree = "<group>"; };
-		AED0D8D00A101D4800C61B65 /* Aorta.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Aorta.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED0D8D00A101D4800C61B65 /* Aorta.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Aorta.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Aorta-Info.plist"; sourceTree = "<group>"; };
 		AED0D9090A10251B00C61B65 /* aorta.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = aorta.h; sourceTree = "<group>"; };
 		AED0D9100A10256500C61B65 /* aorta.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = aorta.cpp; sourceTree = "<group>"; };
@@ -56,6 +59,8 @@
 		AED0D8B30A101C1500C61B65 = {
 			isa = PBXGroup;
 			children = (
+				AE0D48040AD8761E00FD3D5E /* DDSOptionsDialog.cpp */,
+				AE0D48050AD8761E00FD3D5E /* DDSOptionsDialog.h */,
 				AEFE01180A1979B700E99D09 /* imagdds.cpp */,
 				AEFE01190A1979B700E99D09 /* imagdds.h */,
 				AED0D9090A10251B00C61B65 /* aorta.h */,
@@ -132,6 +137,7 @@
 				AED0D9110A10256500C61B65 /* aorta.cpp in Sources */,
 				AEBF5BAA0A1642D200C810B8 /* image_ext.cpp in Sources */,
 				AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */,
+				AE0D48060AD8761E00FD3D5E /* DDSOptionsDialog.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
