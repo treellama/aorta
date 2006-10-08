@@ -9,8 +9,8 @@
 // I've removed what's not useful to imagdds.cpp
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <math.h>
 
 #define CLAMP(v,l,h)    ((v)<(l) ? (l) : (v) > (h) ? (h) : v)
