@@ -42,36 +42,6 @@ static inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-// I don't know of any way to get an opengl context without a window, so:
-class SubtleOpenGLContext
-{
-public:
-    SubtleOpenGLContext() {
-	frame = new wxFrame(NULL, -1, _T(""), wxPoint(0, 0), wxSize(1, 1), wxFRAME_NO_TASKBAR);
-	canvas = new wxGLCanvas(frame, -1, wxDefaultPosition, wxDefaultSize);
-	frame->Show();
-	canvas->SetCurrent();
-
-	glHint(GL_TEXTURE_COMPRESSION_HINT_ARB, GL_NICEST);
-
-	glPixelStorei(GL_PACK_ALIGNMENT, 1);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	glGenTextures(1, &textureRef);
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, textureRef);
-    }
-    
-    ~SubtleOpenGLContext() {
-	glDeleteTextures(1, &textureRef);
-	frame->Close();
-    }
-private:
-    wxFrame *frame;
-    wxGLCanvas *canvas;
-    GLuint textureRef;
-};
-
 bool HasS3TC()
 {
     return ((void *) squish::CompressImage != (void *) squish::DecompressImage);
@@ -334,6 +304,9 @@ static void PremultiplyAlpha(wxImage *image)
 
 bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose)
 {
+
+    wxBusyCursor getBusy;
+
     bool mipmap = image->HasOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS) && 
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_USE_MIPMAPS);
     bool compress = image->HasOption(wxIMAGE_OPTION_DDS_COMPRESS) &&
@@ -349,78 +322,74 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	}
     }
     
-    {
-	SubtleOpenGLContext glContext;
-
-	DDSURFACEDESC2 ddsd;
-	memset(&ddsd, 0, sizeof(ddsd));
-	ddsd.dwSize = 124;
-	ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
-	ddsd.dwHeight = image->GetHeight();
-	ddsd.dwWidth = image->GetWidth();
-	if (compress) {
-	    ddsd.dwFlags |= DDSD_LINEARSIZE;
-	    if (image->HasAlpha()) {
-		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
-		
-		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
-	    } else {
-		ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
-		ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
-	    }
-	} else {
-	    ddsd.dwFlags |= DDSD_PITCH;
-	    if (image->HasAlpha()) {
-		ddsd.dwPitchOrLinearSize = image->GetWidth() * 4;
-	    } else {
-		ddsd.dwPitchOrLinearSize = image->GetWidth() * 3;
-	    }
-	}
+    DDSURFACEDESC2 ddsd;
+    memset(&ddsd, 0, sizeof(ddsd));
+    ddsd.dwSize = 124;
+    ddsd.dwFlags = DDSD_CAPS | DDSD_HEIGHT | DDSD_WIDTH | DDSD_PIXELFORMAT;
+    ddsd.dwHeight = image->GetHeight();
+    ddsd.dwWidth = image->GetWidth();
+    if (compress) {
+	ddsd.dwFlags |= DDSD_LINEARSIZE;
+	if (image->HasAlpha()) {
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 16;
 	    
-	int mipmap_count;
-	
-	if (mipmap) {
+	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '5');
+	} else {
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() / 4 * image->GetHeight() / 4 * 8;
+	    ddsd.ddpfPixelFormat.dwFourCC = MAKE_FOURCC('D', 'X', 'T', '1');
+	}
+    } else {
+	ddsd.dwFlags |= DDSD_PITCH;
+	if (image->HasAlpha()) {
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() * 4;
+	} else {
+	    ddsd.dwPitchOrLinearSize = image->GetWidth() * 3;
+	}
+    }
+    
+    int mipmap_count;
+    
+    if (mipmap) {
 	    mipmap_count = ddsd.dwMipMapCount = NumMipmaps(image);
 	    ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
-	}
-
-	ddsd.ddpfPixelFormat.dwSize = 32;
-	if (compress) {
-	    ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+    }
+    
+    ddsd.ddpfPixelFormat.dwSize = 32;
+    if (compress) {
+	ddsd.ddpfPixelFormat.dwFlags = DDPF_FOURCC;
+    } else {
+	ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
+	ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(0x00ff0000);
+	ddsd.ddpfPixelFormat.dwGBitMask = wxINT32_SWAP_ON_BE(0x0000ff00);
+	ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(0x000000ff);
+	if (image->HasAlpha())
+	{
+	    ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
+	    ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(0xff000000);
 	} else {
-	    ddsd.ddpfPixelFormat.dwFlags = DDPF_RGB;
-	    ddsd.ddpfPixelFormat.dwRBitMask = wxINT32_SWAP_ON_BE(0x00ff0000);
-	    ddsd.ddpfPixelFormat.dwGBitMask = wxINT32_SWAP_ON_BE(0x0000ff00);
-	    ddsd.ddpfPixelFormat.dwBBitMask = wxINT32_SWAP_ON_BE(0x000000ff);
-	    if (image->HasAlpha())
-	    {
-		ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
-		ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(0xff000000);
-	    } else {
-		ddsd.ddpfPixelFormat.dwRGBBitCount = 24;
-	    }
+	    ddsd.ddpfPixelFormat.dwRGBBitCount = 24;
 	}
-
-	ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
-	if (mipmap) ddsd.ddsCaps.dwCaps1 |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
-	
-	WriteHeader(stream, ddsd);
-
-	if (premultiply) 
-	    PremultiplyAlpha(image);
-	wxImage minImage = *image;
-	
-	for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
-	    if (compress) {
-		if (image->HasAlpha()) {
-		    WriteDXT5(minImage, stream);
-		} else {
-		    WriteDXT1(minImage, stream);
-		}
+    }
+    
+    ddsd.ddsCaps.dwCaps1 = DDSCAPS_TEXTURE;
+    if (mipmap) ddsd.ddsCaps.dwCaps1 |= DDSCAPS_MIPMAP | DDSCAPS_COMPLEX;
+    
+    WriteHeader(stream, ddsd);
+    
+    if (premultiply) 
+	PremultiplyAlpha(image);
+    wxImage minImage = *image;
+    
+    for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
+	minImage = Minify(*image, level);
+	if (compress) {
+	    if (image->HasAlpha()) {
+		WriteDXT5(minImage, stream);
 	    } else {
-		WriteRGBA(minImage, stream);
+		WriteDXT1(minImage, stream);
 	    }
-	    minImage = Minify(minImage);
+	} else {
+	    WriteRGBA(minImage, stream);
 	}
     }
 }
@@ -479,18 +448,86 @@ void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
     }	
 }
 
-wxImage wxDDSHandler::Minify(wxImage &image)
+typedef	unsigned char	Pixel;
+
+typedef struct {
+	int	xsize;		/* horizontal size of the image in Pixels */
+	int	ysize;		/* vertical size of the image in Pixels */
+	Pixel *	data;		/* pointer to first scanline of image */
+	int	span;		/* byte offset between two scanlines */
+} Image;
+
+extern "C" {
+#define	triangle_support	(1.0)
+#define Mitchell_support        (2.0)
+#define	Lanczos3_support	(3.0)
+
+    extern double box_filter(double);
+    extern double triangle_filter(double);
+    extern double Lanczos3_filter(double);
+    extern double Mitchell_filter(double);
+    
+    extern void zoom(Image *dst, Image *src, double (*filterf)(double), double fwidth);
+}
+
+wxImage wxDDSHandler::Minify(wxImage &image, int level)
 {
     wxImage minifiedImage;
-    minifiedImage.Create(std::max(image.GetWidth() >> 1, 1), std::max(image.GetHeight() >> 1, 1));
+    if (level == 0) return image;
 
-    gluScaleImage(GL_RGB, image.GetWidth(), image.GetHeight(), GL_UNSIGNED_BYTE, image.GetData(), minifiedImage.GetWidth(), minifiedImage.GetHeight(), GL_UNSIGNED_BYTE, minifiedImage.GetData());
+    minifiedImage.Create(std::max(image.GetWidth() >> level, 1), std::max(image.GetHeight() >> level, 1));
     
-    if (image.HasAlpha()) {
+    // to use filtered scales, we need to do a channel at a time
+    vector<Pixel> srcPlane(image.GetWidth() * image.GetHeight());
+    vector<Pixel> dstPlane(minifiedImage.GetWidth() * minifiedImage.GetHeight());
+
+    double (*f)(double);
+    double s;
+
+    if (image.HasOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER))
+    {
+	if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_TRIANGLE) {
+	    f = triangle_filter;
+	    s = triangle_support;
+	} else if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_LANCZOS) {
+	    f = Lanczos3_filter;
+	    s = Lanczos3_support;
+	} else {
+	    f = Mitchell_filter;
+	    s = Mitchell_support;
+	}
+    } else {
+	f = Mitchell_filter;
+	s = Mitchell_support;
+    }
+
+    Image src = { image.GetWidth(), image.GetHeight(), &srcPlane.front(), image.GetWidth() };
+    Image dst = { minifiedImage.GetWidth(), minifiedImage.GetHeight(), &dstPlane.front(), minifiedImage.GetWidth() };
+
+    // copy the plane into the vector, zoom, then copy it out
+    for (int c = 0; c < 3; c++) {
+	for (int i = 0; i < image.GetWidth() * image.GetHeight(); i++)
+	{
+	    srcPlane[i] = image.GetData()[i * 3 + c];
+	}
+	
+	zoom(&dst, &src, f, s);
+
+	for (int i = 0; i < minifiedImage.GetWidth() * minifiedImage.GetHeight(); i++)
+	{
+	    minifiedImage.GetData()[i * 3 + c] = dstPlane[i];
+	}
+    }
+
+    if (image.HasAlpha())
+    {
 	minifiedImage.InitAlpha();
-	gluScaleImage(GL_ALPHA, image.GetWidth(), image.GetHeight(), GL_UNSIGNED_BYTE, image.GetAlpha(), minifiedImage.GetWidth(), minifiedImage.GetHeight(), GL_UNSIGNED_BYTE, minifiedImage.GetAlpha());
+	src.data = image.GetAlpha();
+	dst.data = image.GetAlpha();
+
+	zoom(&dst, &src, f, s);
     }
 
     return minifiedImage;
-
 }
+    
