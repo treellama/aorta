@@ -483,30 +483,38 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 void BatchPage::do_layout()
 {
 	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
-	wxStaticBox *chooseFilesStaticBox = new wxStaticBox(this, -1, wxT("Drop Files to Choose Sources"));
-	chooseFilesStaticBox->SetDropTarget(new DnDBatchFiles(this));
-	wxStaticBoxSizer* chooseFilesBox = new wxStaticBoxSizer(chooseFilesStaticBox, wxHORIZONTAL);
+	//wxStaticBox *chooseFilesStaticBox = new wxStaticBox(this, -1, wxT("Drop Files to Choose Sources"));
+	//chooseFilesStaticBox->SetDropTarget(new DnDBatchFiles(this));
+	//wxStaticBoxSizer* chooseFilesBox = new wxStaticBoxSizer(chooseFilesStaticBox, wxHORIZONTAL);
+	wxBoxSizer* chooseFilesBox = new wxBoxSizer(wxHORIZONTAL);
+	chooseFiles->SetDropTarget(new DnDBatchFiles(this));
 	chooseFilesBox->Add(chooseFiles, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	chooseFilesBox->Add(fileStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	topSizer->Add(chooseFilesBox, 0, wxALL | wxEXPAND, 10);
+	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 
-	wxStaticBoxSizer* chooseMasksBox = new wxStaticBoxSizer(new wxStaticBox(this, -1, wxT("Choose Masks")), wxVERTICAL);
+	//wxStaticBoxSizer* chooseMasksBox = new wxStaticBoxSizer(new wxStaticBox(this, -1, wxT("Choose Masks")), wxVERTICAL);
+	wxBoxSizer* chooseMasksBox = new wxBoxSizer(wxVERTICAL);
 	chooseMasksBox->Add(findMasks, 0, wxALL, 10);
 	chooseMasksBox->Add(maskString, 0, wxLEFT | wxRIGHT | wxEXPAND, 10);
 	wxStaticText *maskStringHelp = new wxStaticText(this, -1, wxT("Use ^ for file name and $ for extension; e.g. 1.png and ^A$ -> 1A.png"));
 	wxFont helpFont = maskStringHelp->GetFont();
 	helpFont.SetStyle(wxFONTSTYLE_ITALIC);
 	maskStringHelp->SetFont(helpFont);
-	chooseMasksBox->Add(maskStringHelp, 0, wxLEFT | wxRIGHT | wxBOTTOM | wxEXPAND, 10);
+	chooseMasksBox->Add(maskStringHelp, 0, wxALL, 10);
 	topSizer->Add(chooseMasksBox, 0, wxALL | wxEXPAND, 10);
+	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 
-	wxStaticBox *chooseDestinationStaticBox = new wxStaticBox(this, -1, wxT("Drop Folder to Choose Destination"));
-	chooseDestinationStaticBox->SetDropTarget(new DnDBatchDestination(this));
-	wxStaticBoxSizer* chooseDestinationBox = new wxStaticBoxSizer(chooseDestinationStaticBox, wxHORIZONTAL);
+	//wxStaticBox *chooseDestinationStaticBox = new wxStaticBox(this, -1, wxT("Drop Folder to Choose Destination"));
+	//chooseDestinationStaticBox->SetDropTarget(new DnDBatchDestination(this));
+	//wxStaticBoxSizer* chooseDestinationBox = new wxStaticBoxSizer(chooseDestinationStaticBox, wxHORIZONTAL);
+	wxBoxSizer *chooseDestinationBox = new wxBoxSizer(wxHORIZONTAL);
+	selectDestination->SetDropTarget(new DnDBatchDestination(this));
 	chooseDestinationBox->Add(selectDestination, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	topSizer->Add(chooseDestinationBox, 0, wxALL | wxEXPAND, 10);
-	topSizer->Add(convert, 0, wxALL, 10);
+	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
+	topSizer->Add(convert, 0, wxALL, 20);
 	
 	SetAutoLayout(true);
 	SetSizer(topSizer);
