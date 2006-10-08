@@ -110,6 +110,7 @@ void MainFrame::OnLoadMask(wxCommandEvent& event)
 
 void MainFrame::LoadNormal(const wxString& path)
 {
+	notebook->SetSelection(0);
 	basicPage->LoadNormal(path);
 }
 
@@ -623,7 +624,9 @@ void BatchPage::OnConvert(wxCommandEvent &)
 	wxProgressDialog pd(_T("Converting"), _T("Converting"), filesToConvert.Count(), NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME | wxPD_CAN_ABORT);
 	for (int i = 0; i < filesToConvert.Count(); i++)
 	{
-		if (!pd.Update(i)) break;
+		wxString progressString;
+		progressString.Printf("Converting...%i/%i", i + 1, filesToConvert.Count());
+		if (!pd.Update(i, progressString)) break;
 		wxImageExt normalImage;
 		wxImageExt maskImage;
 
