@@ -26,6 +26,7 @@
 #ifndef WX_PRECOMP 
 #include <wx/wx.h>
 #include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/colordlg.h>
 #include <wx/config.h>
 #ifdef wxUSE_DRAG_AND_DROP
@@ -52,6 +53,7 @@ public:
 	wxStaticBox* mipmapBox_staticbox;
 	wxCheckBox* useDXTC;
 	wxCheckBox* generateMipmaps;
+	wxChoice* mipmapFilterChoice;
 	wxRadioButton* noHaloRemoval;
 	wxRadioButton* premultiplyAlpha;
 	wxRadioButton* colorFillBackground;

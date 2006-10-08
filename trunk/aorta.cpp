@@ -251,20 +251,23 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 {
 	if (!normalImage.Ok()) return;
 
-	wxConfig config;
-	wxString Directory;
-	config.Read("Single/DefaultDirectory/Save", &Directory, "");
-	wxFileDialog *saveFileDialog = new wxFileDialog(this,
-							_T("Save As"),
-							Directory,
-							(normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
-							_T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
-							wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
-							wxDefaultPosition);
-	if (saveFileDialog->ShowModal() != wxID_OK) return;
-
-	Directory = saveFileDialog->GetFilename().BeforeLast('/');
-	config.Write("Single/DefaultDirectory/Save", Directory);
+	wxFileDialog *saveFileDialog;
+	{
+		wxConfig config;
+		wxString Directory;
+		config.Read("Single/DefaultDirectory/Save", &Directory, "");
+		saveFileDialog = new wxFileDialog(this,
+								_T("Save As"),
+								Directory,
+								(normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
+								_T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
+								wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
+								wxDefaultPosition);
+		if (saveFileDialog->ShowModal() != wxID_OK) return;
+		
+		Directory = saveFileDialog->GetPath().BeforeLast(wxFileName::GetPathSeparator());
+		config.Write("Single/DefaultDirectory/Save", Directory);
+	}
     
 	wxImageExt saveImage = normalImage;
 	if (maskImage.Ok())
@@ -290,6 +293,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 		if (ddsOptions.generateMipmaps->GetValue()) {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
 			
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
 			if (ddsOptions.premultiplyAlpha->GetValue()) {
 				saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
 			} else {
@@ -464,7 +468,8 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	findMasks->SetValue(value ? 1 : 0);
 	maskString = new wxTextCtrl(this, TEXT_MaskString);
 	wxString mask;
-	config.Read("Batch/MaskString", &mask, "^mask$");
+	config.Read("Batch/MaskString", &mask, "^mask\\$");
+	mask.Replace("\\$", "$");
 	maskString->SetValue(mask);
 	
 	selectDestination = new wxButton(this, BUTTON_ChooseDestination, wxT("Choose Destination..."));
@@ -647,6 +652,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 		if (ddsOptions.generateMipmaps->GetValue())
 		{
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
 			if (ddsOptions.premultiplyAlpha->GetValue())
 			{
 				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
@@ -660,9 +666,9 @@ void BatchPage::OnConvert(wxCommandEvent &)
 			{
 				if (ddsOptions.reconstructColors->GetValue())
 					normalImage.ReconstructColors(ddsOptions.backgroundColor);
-			}
 
-			normalImage.PrepareForMipmaps();
+				normalImage.PrepareForMipmaps();
+			}
 		}
 		else
 		{
@@ -687,7 +693,9 @@ void BatchPage::SaveFindMaskConfig(wxCommandEvent &)
 {
 	wxConfig config;
 	config.Write("Batch/FindMasks", findMasks->GetValue() == 1);
-	config.Write("Batch/MaskString", maskString->GetValue());
+	wxString mask = maskString->GetValue();
+	mask.Replace("$", "\\$");
+	config.Write("Batch/MaskString", mask);
 }
 
 #if wxUSE_DRAG_AND_DROP

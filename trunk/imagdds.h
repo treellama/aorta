@@ -15,6 +15,11 @@
 #define wxIMAGE_OPTION_DDS_FORMAT wxT("DdsFormat")
 #define wxIMAGE_OPTION_DDS_COMPRESS wxT("DdsCompress")
 #define wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA wxT("DdsPremultiplyAlpha")
+#define wxIMAGE_OPTION_DDS_MIPMAP_FILTER wxT("MipmapFilter")
+
+#define wxIMAGE_OPTION_DDS_FILTER_TRIANGLE 0
+#define wxIMAGE_OPTION_DDS_FILTER_MITCHELL 1
+#define wxIMAGE_OPTION_DDS_FILTER_LANCZOS 2
 
 #ifndef __DDRAW_INCLUDED__
 
@@ -101,7 +106,7 @@ private:
     // these functions assume an OpenGL context
     void WriteDXT1(const wxImage& image, wxOutputStream& stream);
     void WriteDXT5(const wxImage& image, wxOutputStream& stream);
-    wxImage Minify(wxImage& image);
+    wxImage Minify(wxImage& image, int level);
 #endif
     
 };
