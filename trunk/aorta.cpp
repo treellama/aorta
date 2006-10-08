@@ -479,6 +479,7 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 		destinationStatus = new wxStaticText(this, -1, wxT("No destination chosen"));
 	else
 		destinationStatus = new wxStaticText(this, -1, destination);
+	destinationStatus->Wrap(300);
 
 	convert = new wxButton(this, BUTTON_Convert, wxT("Batch Convert..."));
 
@@ -583,6 +584,7 @@ void BatchPage::ChooseDestination(const wxString& folder)
 	wxConfig config;
 	config.Write("Batch/Destination", destination);
 	destinationStatus->SetLabel(folder);
+	destinationStatus->Wrap(300);
 }
 
 void BatchPage::OnConvert(wxCommandEvent &)
