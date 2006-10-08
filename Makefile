@@ -43,7 +43,7 @@ CXX = $(shell $(WX_CONFIG) --cxx)
 all:    $(PROGRAM)
 
 $(PROGRAM):	$(OBJECTS)
-	$(CXX) -g -O2 -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std,gl` -lsquish
+	$(CXX) -g -O2 -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish
 
 clean: 
 	rm -f *.o $(PROGRAM)
