@@ -37,7 +37,7 @@ DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix)
 	mipmapFilterChoice = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, filterChoices);
 	noHaloRemoval = new wxRadioButton(this, BUTTON_NoHaloRemoval, wxT("None"));
 	premultiplyAlpha = new wxRadioButton(this, BUTTON_PremultiplyAlpha, wxT("Premultiply Alpha"));
-	colorFillBackground = new wxRadioButton(this, BUTTON_ColorFillBackground, wxT("Color Fill Background (Slow)"));
+	colorFillBackground = new wxRadioButton(this, BUTTON_ColorFillBackground, wxT("Color Fill Background (Very Slow)"));
 	reconstructColors = new wxCheckBox(this, BUTTON_ReconstructColors, wxT("Reconstruct Edge Colors"));
 	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, wxT("Choose Background Color..."));
 
