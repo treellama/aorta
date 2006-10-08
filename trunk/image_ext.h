@@ -29,16 +29,9 @@
 #include <wx/progdlg.h>
 #endif
 
-#ifndef MAX
-#define MAX(x, y) (y < x ? x : y)
-#endif
-#ifndef MIN
-#define MIN(a,b) ((a)<=(b) ? (a) : (b))
-#endif
-#define FLOOR(value,floor) MAX(value,floor)
-#define CEILING(value,ceiling) MIN(value,ceiling)
+#include <algorithm>
 
-#define PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
+#define PIN(value,floor,ceiling) (std::min(std::max((value),(floor)),(ceiling)))
 
 class wxImageExt : public wxImage
 {

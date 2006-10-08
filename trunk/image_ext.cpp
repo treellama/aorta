@@ -68,7 +68,7 @@ void wxImageExt::MaskToAlpha()
 
 void wxImageExt::PropRescale(int width, int height)
 {
-	float scale = (float) MAX(width, height) / MAX(GetWidth(), GetHeight());
+	float scale = (float) std::max(width, height) / std::max(GetWidth(), GetHeight());
 	Rescale((int) (GetWidth() * scale), (int) (GetHeight() * scale));
 	Resize(wxSize(width, height), wxPoint((width - GetWidth()) / 2, (height - GetHeight()) / 2));
 }
@@ -119,7 +119,7 @@ void wxImageExt::MakeOpacTypeThree()
 	int NumPixels = GetWidth() * GetHeight();
 	for (int i = 0; i < NumPixels; i++)
 	{
-		unsigned char Max = MAX(GetData()[i * 3 + 0], MAX(GetData()[i * 3 + 1], GetData()[i * 3 + 2]));
+		unsigned char Max = std::max(GetData()[i * 3 + 0], std::max(GetData()[i * 3 + 1], GetData()[i * 3 + 2]));
 		image.GetData()[i * 3 + 0] = image.GetData()[i * 3 + 1] = image.GetData()[i * 3 + 2] = Max;
 	}
 	
