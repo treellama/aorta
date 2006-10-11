@@ -23,8 +23,8 @@
 
 extern bool HasS3TC(); // from imagdds
 
-DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix)
-	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix)
+DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix, bool HasAlpha)
+	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix), m_hasAlpha(HasAlpha)
 {
 
 	mipmapBox_staticbox = new wxStaticBox(this, -1, wxT("Mipmap Halo Removal Strategy"));
@@ -98,12 +98,12 @@ void DDSOptionsDialog::update_enablement()
 {
 	useDXTC->Enable(HasS3TC());
 
-	noHaloRemoval->Enable(generateMipmaps->GetValue());
-	premultiplyAlpha->Enable(generateMipmaps->GetValue());
+	noHaloRemoval->Enable(generateMipmaps->GetValue() && m_hasAlpha);
+	premultiplyAlpha->Enable(generateMipmaps->GetValue() && m_hasAlpha);
 	mipmapFilterChoice->Enable(generateMipmaps->GetValue());
-	colorFillBackground->Enable(generateMipmaps->GetValue());
-	reconstructColors->Enable(generateMipmaps->GetValue() && colorFillBackground->GetValue());
-	chooseBackground->Enable(generateMipmaps->GetValue() && colorFillBackground->GetValue() && reconstructColors->GetValue());
+	colorFillBackground->Enable(generateMipmaps->GetValue() && m_hasAlpha);
+	reconstructColors->Enable(generateMipmaps->GetValue() && m_hasAlpha && colorFillBackground->GetValue());
+	chooseBackground->Enable(generateMipmaps->GetValue() && m_hasAlpha && colorFillBackground->GetValue() && reconstructColors->GetValue());
 }
 
 bool DDSOptionsDialog::Validate()
