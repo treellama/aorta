@@ -135,15 +135,16 @@ class BatchPage : public wxPanel
 public:
 	BatchPage(wxWindow* parent, wxWindowID id, const wxPoint &pos, const wxSize &size);
 
-	void OnChooseFiles(wxCommandEvent &);
+	void OnChooseSource(wxCommandEvent &);
 	void OnChooseDestination(wxCommandEvent &);
 	
-	void ChooseFiles(const wxArrayString& files);
+	void ChooseSource(const wxString& files);
 	void ChooseDestination(const wxString &folder);
 
 	void OnConvert(wxCommandEvent &);
 
 	void SaveFindMaskConfig(wxCommandEvent &);
+	void SaveRecurseConfig(wxCommandEvent &);
 
         DECLARE_EVENT_TABLE()
 
@@ -152,6 +153,7 @@ private:
 
 	wxButton *chooseFiles;
 	wxStaticText *fileStatus;
+	wxCheckBox *recurseCheckbox;
 
 	wxCheckBox *findMasks;
 	wxTextCtrl *maskString;
@@ -161,7 +163,7 @@ private:
 
 	wxButton *convert;
 
-	wxArrayString filesToConvert;
+	wxString source;
 	wxString destination;
 };
 
@@ -234,6 +236,7 @@ enum
 	BUTTON_ChooseDestination,
 	BUTTON_Convert,
 	BUTTON_FindMasks,
+	CHECKBOX_Recurse,
 	TEXT_MaskString
 };
 
