@@ -342,8 +342,9 @@ double fwidth;				/* filter width (support) */
 		for(i = 0; i < tmp->xsize; ++i) {
 			weight = 0.0;
 			for(j = 0; j < contrib[i].n; ++j) {
-				weight += raster[contrib[i].p[j].pixel]
-					* contrib[i].p[j].weight;
+				if (contrib[i].p[j].weight > 0) 
+					weight += raster[contrib[i].p[j].pixel]
+						* contrib[i].p[j].weight;
 			}
 			put_pixel(tmp, i, k,
 				(Pixel)CLAMP(weight, BLACK_PIXEL, WHITE_PIXEL));
@@ -416,8 +417,9 @@ double fwidth;				/* filter width (support) */
 		for(i = 0; i < dst->ysize; ++i) {
 			weight = 0.0;
 			for(j = 0; j < contrib[i].n; ++j) {
-				weight += raster[contrib[i].p[j].pixel]
-					* contrib[i].p[j].weight;
+				if (contrib[i].p[j].weight > 0)
+					weight += raster[contrib[i].p[j].pixel]
+						* contrib[i].p[j].weight;
 			}
 			put_pixel(dst, k, i,
 				(Pixel)CLAMP(weight, BLACK_PIXEL, WHITE_PIXEL));
