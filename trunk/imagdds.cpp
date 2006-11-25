@@ -420,9 +420,18 @@ static vector<unsigned char> BuildRGBAImage(const wxImage& image)
 
 void wxDDSHandler::WriteDXT1(const wxImage& image, wxOutputStream& stream)
 {
-    vector<unsigned char> compressedBuffer(squish::GetStorageRequirements(image.GetWidth(), image.GetHeight(), squish::kDxt1));
-    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt1);
-    stream.Write(&compressedBuffer.front(), compressedBuffer.size());
+    // use DXT3 to force 4 colors
+    vector<unsigned char> compressedBuffer(squish::GetStorageRequirements(image.GetWidth(), image.GetHeight(), squish::kDxt3));
+    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt3);
+
+    // skip the alpha blocks, and just write the colors
+    unsigned int i = 0;
+    while (i <= compressedBuffer.size() - 16)
+    {
+	i += 8;
+	stream.Write(&compressedBuffer[i], 8);
+	i += 8;
+    }
 }
 
 
