@@ -59,21 +59,21 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 	fileMenu->Append(wxID_ABOUT, _T("&About Aorta..."));
 	fileMenu->AppendSeparator();
 	fileMenu->Append(MENU_LoadNormal, _T("L&oad image..."));
-	fileMenu->Append(MENU_SaveAs, _T("&Save as..."));
-	fileMenu->Append(wxID_EXIT, _T("&Quit"));
+	fileMenu->Append(MENU_SaveAs, wxT("&Save as..."));
+	fileMenu->Append(wxID_EXIT, wxT("&Quit"));
 
 	menuBar = new wxMenuBar;
-	menuBar->Append(fileMenu, _T("&File"));
+	menuBar->Append(fileMenu, wxT("&File"));
 	SetMenuBar(menuBar);
 	
 	wxBoxSizer *topsizer = new wxBoxSizer(wxVERTICAL);
 	notebook = new wxNotebook(this, -1);
 	
 	basicPage = new BasicPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
-	notebook->AddPage(basicPage, _("Compose"), true);
+	notebook->AddPage(basicPage, wxT("Compose"), true);
 
 	batchPage = new BatchPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
-	notebook->AddPage(batchPage, _("Batch Convert"), false);
+	notebook->AddPage(batchPage, wxT("Batch Convert"), false);
 
 	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
 
@@ -90,7 +90,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
 
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
-	wxMessageBox(_T("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), _T("About Aorta"), wxOK);
+	wxMessageBox(wxT("Aorta (the Aleph One Replacement Texture Accessory)\n(C) 2006 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), wxT("About Aorta"), wxOK);
 }
 
 void MainFrame::OnLoadNormal(wxCommandEvent& event)
@@ -129,14 +129,14 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	normalImageStatic->SetDropTarget(new DnDNormalImage(this));
 #endif	
 	column[0]->Add(normalImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
-	normalImageFilename = new wxStaticText(this, -1, _T(""));
+	normalImageFilename = new wxStaticText(this, -1, wxT(""));
 	column[0]->Add(normalImageFilename, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT, 10);
-	normalImageSize = new wxStaticText(this, -1, _T(""));
+	normalImageSize = new wxStaticText(this, -1, wxT(""));
 	column[0]->Add(normalImageSize, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
-	normalImageButton = new wxButton(this, BUTTON_NormalImage, _T("Load normal..."));
+	normalImageButton = new wxButton(this, BUTTON_NormalImage, wxT("Load normal..."));
 	column[0]->Add(normalImageButton, 0, wxALIGN_CENTER | wxALL, 10);
 	
-	unpremultiplyAlpha = new wxButton(this, BUTTON_UnpremultiplyAlpha, _T("Un-Premultiply Alpha"));
+	unpremultiplyAlpha = new wxButton(this, BUTTON_UnpremultiplyAlpha, wxT("Un-Premultiply Alpha"));
 	column[0]->Add(unpremultiplyAlpha, 0, wxALIGN_CENTER | wxALL, 10);
 	
 	pageSizer->Add(column[0], 0, wxEXPAND | wxALL, 10);
@@ -149,27 +149,27 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 #endif
 	column[1]->Add(maskImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
 
-	maskStatus = new wxStaticText(this, -1, _T(""));
+	maskStatus = new wxStaticText(this, -1, wxT(""));
 	column[1]->Add(maskStatus, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	column[1]->AddSpacer(maskStatus->GetRect().GetHeight());
 	
 	wxBoxSizer *loadClearSizer = new wxBoxSizer(wxHORIZONTAL);
-	maskImageButton = new wxButton(this, BUTTON_MaskImage, _T("Load mask..."));
+	maskImageButton = new wxButton(this, BUTTON_MaskImage, wxT("Load mask..."));
 	loadClearSizer->Add(maskImageButton, 1, wxEXPAND | wxRIGHT, 10);
-	clearMaskButton = new wxButton(this, BUTTON_ClearMask, _T("Clear mask"));
+	clearMaskButton = new wxButton(this, BUTTON_ClearMask, wxT("Clear mask"));
 	loadClearSizer->Add(clearMaskButton, 1, wxEXPAND | wxLEFT, 10);
 	column[1]->Add(loadClearSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
 	
 	wxBoxSizer *opacTypeSizer = new wxBoxSizer(wxHORIZONTAL);
-	opacTypeTwo = new wxButton(this, BUTTON_OpacTypeTwo, _T("Opac_type=2"));
-	opacTypeThree = new wxButton(this, BUTTON_OpacTypeThree, _T("Opac_type=3"));
+	opacTypeTwo = new wxButton(this, BUTTON_OpacTypeTwo, wxT("Opac_type=2"));
+	opacTypeThree = new wxButton(this, BUTTON_OpacTypeThree, wxT("Opac_type=3"));
 	opacTypeSizer->Add(opacTypeTwo, 1, wxEXPAND | wxRIGHT, 10);
 	opacTypeSizer->Add(opacTypeThree, 1, wxEXPAND | wxLEFT, 10);
 	column[1]->Add(opacTypeSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
 	SetMaskButtonEnablement(false);
 	
 	wxBoxSizer *saveSizer = new wxBoxSizer(wxHORIZONTAL);
-	saveAsButton = new wxButton(this, BUTTON_SaveAs, _T("Save as..."));
+	saveAsButton = new wxButton(this, BUTTON_SaveAs, wxT("Save as..."));
 	saveAsButton->Disable();
 	saveSizer->AddStretchSpacer(1);
 	saveSizer->Add(saveAsButton, 1, wxEXPAND | wxLEFT, 10);
@@ -188,12 +188,12 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 {
 	wxConfig config;
 	wxString Directory;
-	config.Read("Single/DefaultDirectory/Load", &Directory, "");
+	config.Read(wxT("Single/DefaultDirectory/Load"), &Directory, wxT(""));
 	wxFileDialog *openFileDialog = new wxFileDialog( this,
-							 _("Choose Image"),
+							 wxT("Choose Image"),
 							 Directory,
-							 _(""),
-							 _("Image Files ") + wxImage::GetImageExtWildcard() + _T("|All Files|*.*"),
+							 wxT(""),
+							 wxT("Image Files ") + wxImage::GetImageExtWildcard() + wxT("|All Files|*.*"),
 							 wxOPEN | wxCHANGE_DIR,
 							 wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
@@ -208,12 +208,12 @@ void BasicPage::OnLoadMask(wxCommandEvent &)
 	
 	wxConfig config;
 	wxString Directory;
-	config.Read("Single/DefaultDirectory/Load", &Directory, "");
+	config.Read(wxT("Single/DefaultDirectory/Load"), &Directory, wxT(""));
 	wxFileDialog *openFileDialog = new wxFileDialog(this,
-							_T("Choose Mask"),
-							_T(""),
-							_T(""),
-							_T("Image Files ") + wxImage::GetImageExtWildcard(),
+							wxT("Choose Mask"),
+							wxT(""),
+							wxT(""),
+							wxT("Image Files ") + wxImage::GetImageExtWildcard(),
 							wxOPEN | wxCHANGE_DIR,
 							wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
@@ -256,18 +256,18 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	{
 		wxConfig config;
 		wxString Directory;
-		config.Read("Single/DefaultDirectory/Save", &Directory, "");
+		config.Read(wxT("Single/DefaultDirectory/Save"), &Directory, wxT(""));
 		saveFileDialog = new wxFileDialog(this,
-								_T("Save As"),
+								wxT("Save As"),
 								Directory,
-								(normalImageFilename->GetLabel().BeforeLast('.') + ".dds"),
-								_T("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
+						  (normalImageFilename->GetLabel().BeforeLast('.') + wxT(".dds")),
+								wxT("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
 								wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
 								wxDefaultPosition);
 		if (saveFileDialog->ShowModal() != wxID_OK) return;
 		
 		Directory = saveFileDialog->GetPath().BeforeLast(wxFileName::GetPathSeparator());
-		config.Write("Single/DefaultDirectory/Save", Directory);
+		config.Write(wxT("Single/DefaultDirectory/Save"), Directory);
 	}
     
 	wxImageExt saveImage = normalImage;
@@ -284,11 +284,11 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 		}
 	}
 
-	if (saveFileDialog->GetFilename().AfterLast('.').MakeLower() == _T("png")) {
+	if (saveFileDialog->GetFilename().AfterLast('.').MakeLower() == wxT("png")) {
 		saveImage.SaveFile(saveFileDialog->GetPath(), wxBITMAP_TYPE_PNG);
 	} else {
 		// query for a preset
-		DDSOptionsDialog ddsOptions("Single", saveImage.HasAlpha());
+		DDSOptionsDialog ddsOptions(wxT("Single"), saveImage.HasAlpha());
 		if (ddsOptions.ShowModal() != wxID_OK) return;
 	
 		if (ddsOptions.generateMipmaps->GetValue()) {
@@ -326,7 +326,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 void BasicPage::LoadNormal(const wxString& path)
 {
 	wxConfig config;
-	config.Write("Single/DefaultDirectory/Load", path.BeforeLast('/'));
+	config.Write(wxT("Single/DefaultDirectory/Load"), path.BeforeLast('/'));
 
 	normalImage.LoadFile(path);
 	if (normalImage.Ok())
@@ -346,7 +346,7 @@ void BasicPage::LoadNormal(const wxString& path)
 	
 		normalImageFilename->SetLabel(path.AfterLast('/'));
 		wxString dimensionsString;
-		dimensionsString.Printf("%ix%i", normalImage.GetWidth(), normalImage.GetHeight());
+		dimensionsString.Printf(wxT("%ix%i"), normalImage.GetWidth(), normalImage.GetHeight());
 		normalImageSize->SetLabel(dimensionsString);
 		UpdateNormalDisplay();
 		UpdateMaskDisplay();
@@ -363,7 +363,7 @@ void BasicPage::LoadNormal(const wxString& path)
 void BasicPage::LoadMask(const wxString& path)
 {
 	wxConfig config;
-	config.Write("Single/DefaultDirectory/Load", path.BeforeLast('/'));
+	config.Write(wxT("Single/DefaultDirectory/Load"), path.BeforeLast('/'));
 
 	maskImage.LoadFile(path);
 	if (maskImage.Ok())
@@ -374,7 +374,7 @@ void BasicPage::LoadMask(const wxString& path)
 		}
 		else
 		{
-			wxMessageBox(_T("The mask must be the same width and height as the image."), _T("Invalid mask"), wxOK);
+			wxMessageBox(wxT("The mask must be the same width and height as the image."), wxT("Invalid mask"), wxOK);
 			maskImage.Destroy();
 		}
 	}
@@ -438,19 +438,19 @@ void BasicPage::UpdateMaskDisplay()
 	if (maskImage.Ok())
 	{
 		maskImageDisplay = maskImage;
-		maskStatus->SetLabel(_T(""));
+		maskStatus->SetLabel(wxT(""));
 	} 
 	else if (normalImage.Ok())
 	{
 		maskImageDisplay.Create(normalImage.GetWidth(), normalImage.GetHeight());
 		maskImageDisplay.White();
-		maskStatus->SetLabel(_T("No mask"));
+		maskStatus->SetLabel(wxT("No mask"));
 	}
 	else
 	{
 		maskImageDisplay.Create(width, height);
 		maskImageDisplay.White();
-		maskStatus->SetLabel(_T(""));
+		maskStatus->SetLabel(wxT(""));
 	}
 	maskImageDisplay.PropRescale(width, height);
 	maskImageStatic->SetBitmap(wxBitmap(maskImageDisplay));
@@ -466,20 +466,20 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	fileStatus = new wxStaticText(this, -1, wxT("No files selected"));
 	findMasks = new wxCheckBox(this, BUTTON_FindMasks, wxT("Attempt to find masks"));
 	bool value;
-	config.Read("Batch/Recurse", &value, true);
+	config.Read(wxT("Batch/Recurse"), &value, true);
 	recurseCheckbox->SetValue(value ? 1 : 0);
-	config.Read("Batch/FindMasks", &value, false);
+	config.Read(wxT("Batch/FindMasks"), &value, false);
 	findMasks->SetValue(value ? 1 : 0);
 	maskString = new wxTextCtrl(this, TEXT_MaskString);
 	wxString mask;
-	config.Read("Batch/MaskString", &mask, "^mask\\$");
-	mask.Replace("\\$", "$");
+	config.Read(wxT("Batch/MaskString"), &mask, wxT("^mask\\$"));
+	mask.Replace(wxT("\\$"), wxT("$"));
 	maskString->SetValue(mask);
 	
 	selectDestination = new wxButton(this, BUTTON_ChooseDestination, wxT("Choose Destination..."));
 
-	config.Read("Batch/Destination", &destination, "");
-	if (destination == "")
+	config.Read(wxT("Batch/Destination"), &destination, wxT(""));
+	if (destination == wxT(""))
 		destinationStatus = new wxStaticText(this, -1, wxT("No destination chosen"));
 	else
 		destinationStatus = new wxStaticText(this, -1, destination);
@@ -540,7 +540,7 @@ void BatchPage::do_layout()
 void BatchPage::OnChooseSource(wxCommandEvent &)
 {
 	wxDirDialog *openDirDialog = new wxDirDialog(this,
-						     _("Choose a source folder"));
+						     wxT("Choose a source folder"));
 	if (openDirDialog->ShowModal() == wxID_OK)
 	{
 		ChooseSource(openDirDialog->GetPath());
@@ -557,7 +557,7 @@ void BatchPage::ChooseSource(const wxString& folder)
 void BatchPage::OnChooseDestination(wxCommandEvent &)
 {
 	wxDirDialog *openDirDialog = new wxDirDialog(this,
-						     _("Choose a destination folder"));
+						     wxT("Choose a destination folder"));
 	if (openDirDialog->ShowModal() == wxID_OK)
 	{
 		ChooseDestination(openDirDialog->GetPath());
@@ -569,7 +569,7 @@ void BatchPage::ChooseDestination(const wxString& folder)
 {
 	destination = folder;
 	wxConfig config;
-	config.Write("Batch/Destination", destination);
+	config.Write(wxT("Batch/Destination"), destination);
 	destinationStatus->SetLabel(folder);
 	destinationStatus->Wrap(300);
 }
@@ -581,7 +581,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 
 	wxArrayString filesToConvert;
 	// build an array of files to convert
-	wxDir::GetAllFiles(source, &filesToConvert, "", wxDIR_FILES | (recurseCheckbox->GetValue() ? wxDIR_DIRS : 0));
+	wxDir::GetAllFiles(source, &filesToConvert, wxT(""), wxDIR_FILES | (recurseCheckbox->GetValue() ? wxDIR_DIRS : 0));
 	
 	// remove files beginning with .
 	wxArrayString filesWithDots = filesToConvert;
@@ -605,11 +605,11 @@ void BatchPage::OnConvert(wxCommandEvent &)
 		{
 			wxFileName filename = listIncludingMasks[i];
 			wxString mask = maskString->GetValue();
-			mask.Replace("^", filename.GetPath() + wxFileName::GetPathSeparator() + filename.GetName(), false);
-			if (filename.GetExt() != "")
-				mask.Replace("$", ("." + filename.GetExt()), false);
+			mask.Replace(wxT("^"), filename.GetPath() + wxFileName::GetPathSeparator() + filename.GetName(), false);
+			if (filename.GetExt() != wxT(""))
+				mask.Replace(wxT("$"), (wxT(".") + filename.GetExt()), false);
 			else
-				mask.Replace("$", "");
+				mask.Replace(wxT("$"), wxT(""));
 
 			int loc = filesToConvert.Index(mask);
 			if (loc != wxNOT_FOUND)
@@ -628,33 +628,33 @@ void BatchPage::OnConvert(wxCommandEvent &)
 	}
 
 	// get the DDS options
-	DDSOptionsDialog ddsOptions("Batch", true);
+	DDSOptionsDialog ddsOptions(wxT("Batch"), true);
 	if (ddsOptions.ShowModal() != wxID_OK) return;
 	
-	wxProgressDialog pd(_T("Converting"), _T("Converting"), filesToConvert.Count(), NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME | wxPD_CAN_ABORT);
+	wxProgressDialog pd(wxT("Converting"), wxT("Converting"), filesToConvert.Count(), NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME | wxPD_CAN_ABORT);
 
 	for (int i = 0; i < filesToConvert.Count(); i++)
 	{
 		wxString progressString;
-		progressString.Printf("Converting...%i/%i", i + 1, filesToConvert.Count());
+		progressString.Printf(wxT("Converting...%i/%i"), i + 1, filesToConvert.Count());
 		if (!pd.Update(i, progressString)) break;
 		wxImageExt normalImage;
 		wxImageExt maskImage;
 
 		wxFileName normalFile = source + wxFileName::GetPathSeparator() + filesToConvert[i];
 		wxString mask = maskString->GetValue();
-		mask.Replace("^", normalFile.GetPath() + wxFileName::GetPathSeparator() + normalFile.GetName(), false);
-		mask.Replace("$", ("." + normalFile.GetExt()), false);
+		mask.Replace(wxT("^"), normalFile.GetPath() + wxFileName::GetPathSeparator() + normalFile.GetName(), false);
+		mask.Replace(wxT("$"), (wxT(".") + normalFile.GetExt()), false);
 		wxFileName maskFile = mask;
 		wxFileName saveFile;
 		if (recurseCheckbox->GetValue())
 		{
-			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetPath() + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + ".dds";
+			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetPath() + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + wxT(".dds");
 			wxFileName::Mkdir(saveFile.GetPath(), 0777, wxPATH_MKDIR_FULL);
 		} 
 		else
 		{
-			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + ".dds";
+			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + wxT(".dds");
 		}
 
 		if (normalFile.GetName()[0] == '.') continue;
@@ -719,16 +719,16 @@ void BatchPage::OnConvert(wxCommandEvent &)
 void BatchPage::SaveFindMaskConfig(wxCommandEvent &)
 {
 	wxConfig config;
-	config.Write("Batch/FindMasks", findMasks->GetValue() == 1);
+	config.Write(wxT("Batch/FindMasks"), findMasks->GetValue() == 1);
 	wxString mask = maskString->GetValue();
-	mask.Replace("$", "\\$");
-	config.Write("Batch/MaskString", mask);
+	mask.Replace(wxT("$"), wxT("\\$"));
+	config.Write(wxT("Batch/MaskString"), mask);
 }
 
 void BatchPage::SaveRecurseConfig(wxCommandEvent &)
 {
 	wxConfig config;
-	config.Write("Batch/Recurse", recurseCheckbox->GetValue() == 1);
+	config.Write(wxT("Batch/Recurse"), recurseCheckbox->GetValue() == 1);
 }
 
 #if wxUSE_DRAG_AND_DROP
