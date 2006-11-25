@@ -35,15 +35,20 @@ OBJECTS = $(PROGRAM).o image_ext.o imagdds.o DDSOptionsDialog.o filter.o
 # you shouldn't have to edit anything below this line
 CXX = $(shell $(WX_CONFIG) --cxx)
 
+OPTFLAGS=-g -O2
+
 .SUFFIXES:	.o .cpp
 
 .cpp.o :
-	$(CXX) -g -O2 -c `$(WX_CONFIG) --cxxflags` -o $@ $<
+	$(CXX) $(OPTFLAGS) -c `$(WX_CONFIG) --cxxflags` -o $@ $<
+
+.c.o:
+	$(CC) $(OPTFLAGS) -c -o $@ $<
 
 all:    $(PROGRAM)
 
 $(PROGRAM):	$(OBJECTS)
-	$(CXX) -g -O2 -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish
+	$(CXX) $(OPTFLAGS) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish
 
 clean: 
 	rm -f *.o $(PROGRAM)
