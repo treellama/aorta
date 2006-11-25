@@ -24,16 +24,16 @@
 extern bool HasS3TC(); // from imagdds
 
 DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix, bool HasAlpha)
-	: wxDialog(NULL, -1, _T("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix), m_hasAlpha(HasAlpha)
+	: wxDialog(NULL, -1, wxT("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix), m_hasAlpha(HasAlpha)
 {
 
 	mipmapBox_staticbox = new wxStaticBox(this, -1, wxT("Mipmap Halo Removal Strategy"));
 	useDXTC = new wxCheckBox(this, -1, wxT("Use DXTC (Texture Compression)"));
 	generateMipmaps = new wxCheckBox(this, BUTTON_GenerateMipmaps, wxT("Generate Mipmaps"));
 	wxArrayString filterChoices;
-	filterChoices.Add("Triangle");
-	filterChoices.Add("Mitchell (Bicubic)");
-	filterChoices.Add("Lanczos");
+	filterChoices.Add(wxT("Triangle"));
+	filterChoices.Add(wxT("Mitchell (Bicubic)"));
+	filterChoices.Add(wxT("Lanczos"));
 	mipmapFilterChoice = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, filterChoices);
 	noHaloRemoval = new wxRadioButton(this, BUTTON_NoHaloRemoval, wxT("None"));
 	premultiplyAlpha = new wxRadioButton(this, BUTTON_PremultiplyAlpha, wxT("Premultiply Alpha"));
@@ -54,7 +54,7 @@ void DDSOptionsDialog::fill_from_prefs()
 	bool value;
 	if (HasS3TC())
 	{
-		config.Read("UseDXTC", &value, true);
+		config.Read(wxT("UseDXTC"), &value, true);
 		useDXTC->SetValue(value ? 1 : 0);
 	}
 	else
@@ -62,20 +62,20 @@ void DDSOptionsDialog::fill_from_prefs()
 		useDXTC->SetValue(0);
 	}
 	
-	config.Read("GenerateMipmaps", &value, true);
+	config.Read(wxT("GenerateMipmaps"), &value, true);
 	generateMipmaps->SetValue(value ? 1 : 0);
 
 	long filter;
-	config.Read("MipmapFilter", &filter, 1);
+	config.Read(wxT("MipmapFilter"), &filter, 1);
 	mipmapFilterChoice->SetSelection(filter);
 
 	wxString haloRemovalStrategy;
-	config.Read("HaloRemovalStrategy", &haloRemovalStrategy, "None");
-	if (haloRemovalStrategy == "PremultiplyAlpha")
+	config.Read(wxT("HaloRemovalStrategy"), &haloRemovalStrategy, wxT("None"));
+	if (haloRemovalStrategy == wxT("PremultiplyAlpha"))
 	{
 		premultiplyAlpha->SetValue(1);
 	}
-	else if (haloRemovalStrategy == "ColorFillBackground")
+	else if (haloRemovalStrategy == wxT("ColorFillBackground"))
 	{
 		colorFillBackground->SetValue(1);
 	}
@@ -84,13 +84,13 @@ void DDSOptionsDialog::fill_from_prefs()
 		noHaloRemoval->SetValue(1);
 	}
 
-	config.Read("ReconstructEdgeColors", &value, true);
+	config.Read(wxT("ReconstructEdgeColors"), &value, true);
 	reconstructColors->SetValue(value ? 1 : 0);
 
 	long r, g, b;
-	config.Read("BackgroundColor/R", &r, 0xff);
-	config.Read("BackgroundColor/G", &g, 0xff);
-	config.Read("BackgroundColor/B", &b, 0xff);
+	config.Read(wxT("BackgroundColor/R"), &r, 0xff);
+	config.Read(wxT("BackgroundColor/G"), &g, 0xff);
+	config.Read(wxT("BackgroundColor/B"), &b, 0xff);
 	backgroundColor.Set((unsigned char) r, (unsigned char) g, (unsigned char) b);
 }
 
@@ -110,31 +110,31 @@ bool DDSOptionsDialog::Validate()
 {
 	wxConfig config;
 	config.SetPath(m_prefix);
-	config.Write("UseDXTC", useDXTC->GetValue());
-	config.Write("GenerateMipmaps", generateMipmaps->GetValue());
+	config.Write(wxT("UseDXTC"), useDXTC->GetValue());
+	config.Write(wxT("GenerateMipmaps"), generateMipmaps->GetValue());
 	if (generateMipmaps->GetValue())
 	{
-		config.Write("MipmapFilter", mipmapFilterChoice->GetSelection());
+		config.Write(wxT("MipmapFilter"), mipmapFilterChoice->GetSelection());
 		if (noHaloRemoval->GetValue())
 		{
-			config.Write("HaloRemovalStrategy", "None");
+			config.Write(wxT("HaloRemovalStrategy"), wxT("None"));
 		}
 		else if (premultiplyAlpha->GetValue())
 		{
-			config.Write("HaloRemovalStrategy", "PremultiplyAlpha");
+			config.Write(wxT("HaloRemovalStrategy"), wxT("PremultiplyAlpha"));
 		} 
 		else if (colorFillBackground->GetValue())
 		{
-			config.Write("HaloRemovalStrategy", "ColorFillBackground");
+			config.Write(wxT("HaloRemovalStrategy"), wxT("ColorFillBackground"));
 		}
 
 		if (colorFillBackground->GetValue())
 		{
-			config.Write("ReconstructColors", reconstructColors->GetValue() == 1);
+			config.Write(wxT("ReconstructColors"), reconstructColors->GetValue() == 1);
 			
-			config.Write("BackgroundColor/R", (long) backgroundColor.Red());
-			config.Write("BackgroundColor/G", (long) backgroundColor.Green());
-			config.Write("BackgroundColor/B", (long) backgroundColor.Blue());
+			config.Write(wxT("BackgroundColor/R"), (long) backgroundColor.Red());
+			config.Write(wxT("BackgroundColor/G"), (long) backgroundColor.Green());
+			config.Write(wxT("BackgroundColor/B"), (long) backgroundColor.Blue());
 		}
 	}
 
@@ -152,7 +152,7 @@ void DDSOptionsDialog::do_layout()
 	wxBoxSizer* colorFillBox = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* chooseBackgroundIndenter = new wxBoxSizer(wxHORIZONTAL);
 	mipmapFilterIndenter->Add(20, 10, 0, wxADJUST_MINSIZE, 0);
-	mipmapFilterIndenter->Add(new wxStaticText(this, -1, "Filter:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	mipmapFilterIndenter->Add(new wxStaticText(this, -1, wxT("Filter:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	mipmapFilterIndenter->Add(mipmapFilterChoice, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND);
 	topSizer->Add(useDXTC, 0, wxALL |wxADJUST_MINSIZE, 10);
 	topSizer->Add(generateMipmaps, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxADJUST_MINSIZE, 10);
