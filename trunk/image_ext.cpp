@@ -181,33 +181,38 @@ void wxImageExt::PrepareForMipmaps()
     tempImage.Create(GetWidth(), GetHeight());
     tempImage.InitAlpha();
     int filled_in = 1;
+    bool reverse = false;
     while (filled_in) {
 	filled_in = 0;
 	int numBackgroundPixelsRemaining = 0;
 	tempImage.Create(GetWidth(), GetHeight(), true);
 	
-	short rSum, gSum, bSum, aSum;
+	short rSum, gSum, bSum;
 	int surround;
-	for (int i = 0; i < GetWidth(); i++) {
-	    for (int j = 0; j < GetHeight(); j++) {
+
+	int width = GetWidth();
+	int height = GetHeight();
+	for (int i = 0; i < width; ++i) {
+	    for (int j = 0; j < height; ++j) {
 		if (result.GetAlpha(i, j) != 0)
 		    continue;
 
 		numBackgroundPixelsRemaining++;
-		rSum = gSum = bSum = aSum = 0;
+		rSum = gSum = bSum = 0;
 		surround = 0;
-		for (int x = -1; x <= 1; x++)
-		    for (int y = -1; y <= 1; y++) {
+
+		int xstart = (i == 0) ? 0 : -1;
+		int xend = (i == (width - 1)) ? 0 : 1;
+		int ystart = (j == 0) ? 0 : -1;
+		int yend = (j == (height - 1)) ? 0 : 1;
+		
+		for (int x = xstart; x <= xend; x++)
+		    for (int y = ystart; y <= yend; y++) {
 			if (x == 0 && y == 0) continue;
-			if (i + x < 0) continue;
-			if (i + x > GetWidth() - 1) continue;
-			if (j + y < 0) continue;
-			if (j + y > GetHeight() - 1) continue;
 			if (result.GetAlpha(i + x, j + y) != 0) {
 			    rSum += result.GetRed(i + x, j + y);
 			    gSum += result.GetGreen(i + x, j + y);
 			    bSum += result.GetBlue(i + x, j + y);
-			    aSum += result.GetAlpha(i + x, j + y);
 			    surround++;
 			}
 		    }
@@ -215,14 +220,13 @@ void wxImageExt::PrepareForMipmaps()
 		if (surround > 2)
 		{
 		    tempImage.SetRGB(i, j, rSum / surround, gSum / surround, bSum / surround);
-		    tempImage.SetAlpha(i, j, aSum / surround);
 		}
 	    }
 	}
 
-	for (int i = 0; i < GetWidth(); i++)
+	for (int i = 0; i < width; i++)
 	{
-	    for (int j = 0; j < GetHeight(); j++)
+	    for (int j = 0; j < height; j++)
 	    {
 		if (result.GetAlpha(i, j) == 0) {
 		    if (tempImage.GetRed(i, j) != 0 || tempImage.GetGreen(i, j) != 0 || tempImage.GetBlue(i, j) != 0) {
