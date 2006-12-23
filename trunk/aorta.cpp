@@ -39,7 +39,7 @@ bool MainApp::OnInit()
 		MainWin->LoadNormal(argv[1]);
 
 	if (!HasS3TC())
-		wxMessageBox(_T("Can not locate Squish Framework; DXTC support is not available."), _T("Warning"), wxOK);
+		wxMessageBox(_T("Can not locate Squish Framework. To enable DXTC support, download squish.framework from http://www.sjbrown.co.uk/?code=squish and copy it to your ~/Library/Frameworks folder."), _T("Warning"), wxOK);
 	
 	return TRUE;
 } 
