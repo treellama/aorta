@@ -350,7 +350,7 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
     int mipmap_count;
     
     if (mipmap) {
-	    mipmap_count = ddsd.dwMipMapCount = NumMipmaps(image);
+	    mipmap_count = ddsd.dwMipMapCount = NumMipmaps(*image);
 	    ddsd.dwFlags |= DDSD_MIPMAPCOUNT;
     }
     
