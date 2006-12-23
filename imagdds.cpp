@@ -366,6 +366,7 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	{
 	    ddsd.ddpfPixelFormat.dwRGBBitCount = 32;
 	    ddsd.ddpfPixelFormat.dwRGBAlphaBitMask = wxINT32_SWAP_ON_BE(0xff000000);
+	    ddsd.ddpfPixelFormat.dwFlags |= DDPF_ALPHAPIXELS;
 	} else {
 	    ddsd.ddpfPixelFormat.dwRGBBitCount = 24;
 	}
