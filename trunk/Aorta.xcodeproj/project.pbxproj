@@ -231,8 +231,8 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
-					i386,
 					ppc,
+					i386,
 				);
 				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
@@ -243,13 +243,12 @@
 				INFOPLIST_FILE = "Aorta-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_CFLAGS = (
-					"-I/usr/local/lib/wx/include/mac-ansi-release-static-2.6",
-					"-I/usr/local/include/wx-2.6",
-					"-D__WXMAC__",
-					"-I/Library/Frameworks/Squish.framework/Headers",
+					"-I/usr/local/lib/wx/include/mac-ansi-release-static-2.8",
+					"-I/usr/local/include/wx-2.8",
 					"-D_FILE_OFFSET_BITS=64",
 					"-D_LARGE_FILES",
-					"-DNO_GCC_PRAGMA",
+					"-D__WXMAC__",
+					"-I/Library/Frameworks/squish.framework/Headers",
 				);
 				OTHER_LDFLAGS = (
 					"-L/usr/local/lib",
@@ -265,30 +264,26 @@
 					Cocoa,
 					"-framework",
 					System,
-					"/usr/local/lib/libwx_mac_gl-2.6.a",
-					"/usr/local/lib/libwx_mac_xrc-2.6.a",
-					"/usr/local/lib/libwx_mac_qa-2.6.a",
-					"/usr/local/lib/libwx_mac_html-2.6.a",
-					"/usr/local/lib/libwx_mac_adv-2.6.a",
-					"/usr/local/lib/libwx_mac_core-2.6.a",
-					"/usr/local/lib/libwx_base_carbon_xml-2.6.a",
-					"/usr/local/lib/libwx_base_carbon_net-2.6.a",
-					"/usr/local/lib/libwx_base_carbon-2.6.a",
-					"-framework",
-					OpenGL,
-					"-framework",
-					AGL,
+					"/usr/local/lib/libwx_mac_aui-2.8.a",
+					"/usr/local/lib/libwx_mac_xrc-2.8.a",
+					"/usr/local/lib/libwx_mac_qa-2.8.a",
+					"/usr/local/lib/libwx_mac_html-2.8.a",
+					"/usr/local/lib/libwx_mac_adv-2.8.a",
+					"/usr/local/lib/libwx_mac_core-2.8.a",
+					"/usr/local/lib/libwx_base_carbon_xml-2.8.a",
+					"/usr/local/lib/libwx_base_carbon_net-2.8.a",
+					"/usr/local/lib/libwx_base_carbon-2.8.a",
 					"-framework",
 					WebKit,
-					"-weak_framework",
-					Squish,
-					"-lwxexpat-2.6",
-					"-lwxtiff-2.6",
-					"-lwxjpeg-2.6",
-					"-lwxpng-2.6",
+					"-lwxexpat-2.8",
+					"-lwxtiff-2.8",
+					"-lwxjpeg-2.8",
+					"-lwxpng-2.8",
 					"-lz",
 					"-lpthread",
 					"-liconv",
+					"-weak_framework",
+					Squish,
 				);
 				PREBINDING = NO;
 				PRODUCT_NAME = Aorta;
