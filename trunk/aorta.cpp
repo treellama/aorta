@@ -463,7 +463,7 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	wxConfig config;
 	chooseFiles = new wxButton(this, BUTTON_ChooseFiles, wxT("Choose Source..."));
 	recurseCheckbox = new wxCheckBox(this, CHECKBOX_Recurse, wxT("Traverse (and recreate) subfolders"));
-	fileStatus = new wxStaticText(this, -1, wxT("No files selected"));
+	fileStatus = new wxTextCtrl(this, -1, wxT("No files selected"), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
 	findMasks = new wxCheckBox(this, BUTTON_FindMasks, wxT("Attempt to find masks"));
 	bool value;
 	config.Read(wxT("Batch/Recurse"), &value, true);
@@ -480,10 +480,10 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 
 	config.Read(wxT("Batch/Destination"), &destination, wxT(""));
 	if (destination == wxT(""))
-		destinationStatus = new wxStaticText(this, -1, wxT("No destination chosen"));
+		destinationStatus = new wxTextCtrl(this, -1, wxT("No destination chosen"), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
 	else
-		destinationStatus = new wxStaticText(this, -1, destination);
-	destinationStatus->Wrap(300);
+		destinationStatus = new wxTextCtrl(this, -1, destination, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+//	destinationStatus->Wrap(300);
 
 	convert = new wxButton(this, BUTTON_Convert, wxT("Batch Convert..."));
 
@@ -499,6 +499,7 @@ void BatchPage::do_layout()
 	wxBoxSizer* chooseFilesBox = new wxBoxSizer(wxHORIZONTAL);
 	chooseFiles->SetDropTarget(new DnDBatchFiles(this));
 	chooseFilesBox->Add(chooseFiles, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	fileStatus->SetDropTarget(new DnDBatchFiles(this));
 	chooseFilesBox->Add(fileStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	topSizer->Add(chooseFilesBox, 0, wxALL | wxEXPAND, 10);
 	wxBoxSizer* recurseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -525,6 +526,7 @@ void BatchPage::do_layout()
 	wxBoxSizer *chooseDestinationBox = new wxBoxSizer(wxHORIZONTAL);
 	selectDestination->SetDropTarget(new DnDBatchDestination(this));
 	chooseDestinationBox->Add(selectDestination, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	destinationStatus->SetDropTarget(new DnDBatchDestination(this));
 	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	topSizer->Add(chooseDestinationBox, 0, wxALL | wxEXPAND, 10);
 	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
@@ -550,8 +552,9 @@ void BatchPage::OnChooseSource(wxCommandEvent &)
 void BatchPage::ChooseSource(const wxString& folder)
 {
 	source = folder;
-	fileStatus->SetLabel(folder);
-	fileStatus->Wrap(300);
+//	fileStatus->SetLabel(folder);
+	fileStatus->SetValue(folder);
+//	fileStatus->Wrap(300);
 }
 
 void BatchPage::OnChooseDestination(wxCommandEvent &)
@@ -570,8 +573,8 @@ void BatchPage::ChooseDestination(const wxString& folder)
 	destination = folder;
 	wxConfig config;
 	config.Write(wxT("Batch/Destination"), destination);
-	destinationStatus->SetLabel(folder);
-	destinationStatus->Wrap(300);
+	destinationStatus->SetValue(folder);
+//	destinationStatus->Wrap(300);
 }
 
 void BatchPage::OnConvert(wxCommandEvent &)

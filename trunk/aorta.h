@@ -40,6 +40,7 @@
 #include <wx/sizer.h>
 #include <wx/statbmp.h>
 #include <wx/statline.h>
+#include <wx/textctrl.h>
 
 #include <wx/bitmap.h>
 #include <wx/bmpbuttn.h>
@@ -152,14 +153,14 @@ private:
 	void do_layout();
 
 	wxButton *chooseFiles;
-	wxStaticText *fileStatus;
+	wxTextCtrl *fileStatus;
 	wxCheckBox *recurseCheckbox;
 
 	wxCheckBox *findMasks;
 	wxTextCtrl *maskString;
 
 	wxButton *selectDestination;
-	wxStaticText *destinationStatus;
+	wxTextCtrl *destinationStatus;
 
 	wxButton *convert;
 
