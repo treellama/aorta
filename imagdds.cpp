@@ -423,7 +423,7 @@ void wxDDSHandler::WriteDXT1(const wxImage& image, wxOutputStream& stream)
 {
     // use DXT3 to force 4 colors
     vector<unsigned char> compressedBuffer(squish::GetStorageRequirements(image.GetWidth(), image.GetHeight(), squish::kDxt3));
-    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt3);
+    squish::CompressImage(&BuildRGBAImage(image).front(), image.GetWidth(), image.GetHeight(), &compressedBuffer.front(), squish::kDxt3 | squish::kColourIterativeClusterFit);
 
     // skip the alpha blocks, and just write the colors
     unsigned int i = 0;
