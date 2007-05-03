@@ -295,11 +295,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
 			
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
-			if (saveImage.HasAlpha() && ddsOptions.premultiplyAlpha->GetValue()) {
-				saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
-			} else {
-				saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
-			}
+			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
 
 			if (saveImage.HasAlpha() && ddsOptions.colorFillBackground->GetValue()) {
 				if (ddsOptions.reconstructColors->GetValue()) {
@@ -683,14 +679,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 		{
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
-			if (normalImage.HasAlpha() && ddsOptions.premultiplyAlpha->GetValue())
-			{
-				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 1);
-			}
-			else
-			{
-				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
-			}
+			normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
 
 			if (normalImage.HasAlpha() && ddsOptions.colorFillBackground->GetValue())
 			{
