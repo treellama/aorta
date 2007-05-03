@@ -533,7 +533,7 @@ wxImage wxDDSHandler::Minify(wxImage &image, int level)
     {
 	minifiedImage.InitAlpha();
 	src.data = image.GetAlpha();
-	dst.data = image.GetAlpha();
+	dst.data = minifiedImage.GetAlpha();
 
 	zoom(&dst, &src, f, s);
     }
