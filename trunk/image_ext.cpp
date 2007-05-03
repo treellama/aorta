@@ -20,6 +20,7 @@
  */
 
 #include "image_ext.h"
+#include <vector>
 
 void wxImageExt::White()
 {
@@ -126,7 +127,7 @@ void wxImageExt::MakeOpacTypeThree()
 	*this = image;
 }
 
-// thanks to the Virtual Terrain Project for these algorithms, and the code looks
+// thanks to the Virtual Terrain Project for this algorithm, and the code looks
 // pretty similar too...
 
 void wxImageExt::ReconstructColors(const wxColour& bgColor)
@@ -159,98 +160,6 @@ void wxImageExt::ReconstructColors(const wxColour& bgColor)
 	*this = result;
 }
 
-void wxImageExt::PrepareForMipmaps()
-{
-    if (!HasAlpha()) return;
-    wxBusyCursor();
-
-    wxImageExt result  = *this;
-    // scan for background pixels
-    int numBackgroundPixels = 0;
-    for (int x = 0; x < GetWidth(); x++) {
-	for (int y = 0; y < GetWidth(); y++) {
-	    if (GetAlpha(x, y) == 0) {
-		numBackgroundPixels++;
-	    }
-	}
-    }
-    
-    wxProgressDialog pd(_T("Processing"), _T("Processing background pixels"), numBackgroundPixels, NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME);
-
-    wxImageExt tempImage;
-    tempImage.Create(GetWidth(), GetHeight());
-    tempImage.InitAlpha();
-    int filled_in = 1;
-    bool reverse = false;
-    while (filled_in) {
-	filled_in = 0;
-	int numBackgroundPixelsRemaining = 0;
-	tempImage.Create(GetWidth(), GetHeight(), true);
-	
-	short rSum, gSum, bSum;
-	int surround;
-
-	int width = GetWidth();
-	int height = GetHeight();
-	for (int i = 0; i < width; ++i) {
-	    for (int j = 0; j < height; ++j) {
-		if (result.GetAlpha(i, j) != 0)
-		    continue;
-
-		numBackgroundPixelsRemaining++;
-		rSum = gSum = bSum = 0;
-		surround = 0;
-
-		int xstart = (i == 0) ? 0 : -1;
-		int xend = (i == (width - 1)) ? 0 : 1;
-		int ystart = (j == 0) ? 0 : -1;
-		int yend = (j == (height - 1)) ? 0 : 1;
-		
-		for (int x = xstart; x <= xend; x++)
-		    for (int y = ystart; y <= yend; y++) {
-			if (x == 0 && y == 0) continue;
-			if (result.GetAlpha(i + x, j + y) != 0) {
-			    rSum += result.GetRed(i + x, j + y);
-			    gSum += result.GetGreen(i + x, j + y);
-			    bSum += result.GetBlue(i + x, j + y);
-			    surround++;
-			}
-		    }
-		
-		if (surround > 2)
-		{
-		    tempImage.SetRGB(i, j, rSum / surround, gSum / surround, bSum / surround);
-		}
-	    }
-	}
-
-	for (int i = 0; i < width; i++)
-	{
-	    for (int j = 0; j < height; j++)
-	    {
-		if (result.GetAlpha(i, j) == 0) {
-		    if (tempImage.GetRed(i, j) != 0 || tempImage.GetGreen(i, j) != 0 || tempImage.GetBlue(i, j) != 0) {
-			result.SetRGB(i, j, tempImage.GetRed(i, j), tempImage.GetGreen(i, j), tempImage.GetBlue(i, j));
-			result.SetAlpha(i, j, 1);
-			filled_in++;
-		    }
-		}
-	    }
-	}
-	pd.Update(numBackgroundPixels - numBackgroundPixelsRemaining);
-    }
-
-    pd.Update(numBackgroundPixels);
-
-    for (int i = 0; i < GetWidth(); i++) {
-	for (int j = 0; j < GetHeight(); j++) {
-	    if (result.GetAlpha(i, j) == 1) result.SetAlpha(i, j, 0);
-	}
-    }
-
-    *this = result;
-}
-
 void wxImageExt::UnpremultiplyAlpha()
 {
 	for (int x = 0; x < GetWidth(); x++) {
@@ -267,4 +176,107 @@ void wxImageExt::UnpremultiplyAlpha()
 	    SetRGB(x, y, (unsigned char) red, (unsigned char) green, (unsigned char) blue);
 	}
     }
+}
+
+static bool Downsample(wxImage &src, wxImage &dst)
+{
+	if (src.GetWidth() == 2 || src.GetHeight() == 2) return false;
+	int holes = 0;
+	for (int y = 0; y < src.GetHeight(); y++) {
+		for (int x = 0; x < src.GetWidth(); x++) {
+			if (src.GetAlpha(x, y) == 0) {
+				holes++;
+			}
+		}
+	}
+
+	if (holes == 0) return false;
+
+	dst.Create(src.GetWidth() / 2, src.GetHeight() / 2, true);
+	dst.InitAlpha();
+
+	for (int y = 0; y < dst.GetHeight(); y++) {
+		for (int x = 0; x < dst.GetWidth(); x++) {
+
+			const int x0 = 2 * x + 0;
+			const int x1 = 2 * x + 1;
+			const int y0 = 2 * y + 0;
+			const int y1 = 2 * y + 1;
+
+			if (src.GetAlpha(x0, y0) || src.GetAlpha(x1, y0) || src.GetAlpha(x0, y1) || src.GetAlpha(x1, y1))
+			{
+				unsigned int rSum = 0;
+				unsigned int gSum = 0;
+				unsigned int bSum  = 0;
+				unsigned int aSum = 0;
+				int total = 0;
+				if (src.GetAlpha(x0, y0)) {
+					rSum += src.GetRed(x0, y0);
+					gSum += src.GetGreen(x0, y0);
+					bSum += src.GetBlue(x0, y0);
+					total++;
+				}	
+				if (src.GetAlpha(x1, y0)) {
+					rSum += src.GetRed(x1, y0);
+					gSum += src.GetGreen(x1, y0);
+					bSum += src.GetBlue(x1, y0);
+					total++;
+				}
+				if (src.GetAlpha(x0, y1)) {
+					rSum += src.GetRed(x0, y1);
+					gSum += src.GetGreen(x0, y1);
+					bSum += src.GetBlue(x0, y1);
+					total++;
+				}
+				if (src.GetAlpha(x1, y1)) {
+					rSum += src.GetRed(x1, y1);
+					gSum += src.GetGreen(x1, y1);
+					bSum += src.GetBlue(x1, y1);
+					total++;
+				}
+
+				dst.SetRGB(x, y, (unsigned char) (rSum / total), (unsigned char) (gSum / total), (unsigned char) (bSum / total));
+				dst.SetAlpha(x, y, 255);
+			} else {
+				dst.SetRGB(x, y, 0, 0, 0);
+				dst.SetAlpha(x, y, 0);
+			}
+		}
+	}
+
+	return true;
+				     
+}
+
+// This is the filter used in the Lumigraph paper. The Unreal engine uses something similar.
+void wxImageExt::PrepareForMipmaps()
+{
+	std::vector<wxImage> mipmaps;
+	
+	mipmaps.push_back(*this);
+
+	wxImageExt temp;
+	while (Downsample(mipmaps.back(), temp))
+	{
+		mipmaps.push_back(temp);
+	}
+
+	for (int y = 0; y < GetHeight(); y++) {
+		for (int x = 0; x < GetWidth(); x++) {
+
+			int sx = x;
+			int sy = y;
+
+			for (int l = 0; l < mipmaps.size(); l++) {
+				if (mipmaps[l].GetAlpha(sx, sy))
+				{
+					SetRGB(x, y, mipmaps[l].GetRed(sx, sy), mipmaps[l].GetGreen(sx, sy), mipmaps[l].GetBlue(sx, sy));
+					break;
+				}
+		      
+				sx /= 2;
+				sy /= 2;
+			}
+		}
+	}
 }

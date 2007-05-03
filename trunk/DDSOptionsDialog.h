@@ -54,9 +54,7 @@ public:
 	wxCheckBox* useDXTC;
 	wxCheckBox* generateMipmaps;
 	wxChoice* mipmapFilterChoice;
-	wxRadioButton* noHaloRemoval;
-	wxRadioButton* premultiplyAlpha;
-	wxRadioButton* colorFillBackground;
+	wxCheckBox* colorFillBackground;
 	wxCheckBox* reconstructColors;
 	wxButton* chooseBackground;
 
