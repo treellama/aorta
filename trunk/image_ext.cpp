@@ -133,31 +133,27 @@ void wxImageExt::MakeOpacTypeThree()
 void wxImageExt::ReconstructColors(const wxColour& bgColor)
 {
 	// restore the color of edge texels by guessing correct non-background color
-    wxImageExt result;
 	
-    result.Create(GetWidth(), GetHeight());
-    result.InitAlpha();
     for (int x = 0; x < GetWidth(); x++) {
 		for (int y = 0; y < GetHeight(); y++) {
 			if (GetAlpha(x, y) == 0) {
-				result.SetAlpha(x, y, 0);
-				result.SetRGB(x, y, bgColor.Red(), bgColor.Green(), bgColor.Blue());
+				SetAlpha(x, y, 0);
+				SetRGB(x, y, bgColor.Red(), bgColor.Green(), bgColor.Blue());
 			} else if (GetAlpha(x, y) == 0xff) {
-				result.SetAlpha(x, y, 0xff);
-				result.SetRGB(x, y, GetRed(x, y), GetGreen(x, y), GetBlue(x, y));
+				SetAlpha(x, y, 0xff);
+				SetRGB(x, y, GetRed(x, y), GetGreen(x, y), GetBlue(x, y));
 			} else {
 				float blend_factor = GetAlpha(x, y) / 255.0f;
-				result.SetAlpha(x, y, GetAlpha(x, y));
+				SetAlpha(x, y, GetAlpha(x, y));
 				short rDiff = GetRed(x, y) - bgColor.Red();
 				short gDiff = GetGreen(x, y) - bgColor.Green();
 				short bDiff = GetBlue(x, y) - bgColor.Blue();
 				
-				result.SetRGB(x, y, PIN(bgColor.Red() + (int) (rDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Green() + (int) (gDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Blue() + (int) (bDiff * (1.0f / blend_factor)), 0, 255));
+				SetRGB(x, y, PIN(bgColor.Red() + (int) (rDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Green() + (int) (gDiff * (1.0f / blend_factor)), 0, 255), PIN(bgColor.Blue() + (int) (bDiff * (1.0f / blend_factor)), 0, 255));
 			}
 		}
     }
 	
-	*this = result;
 }
 
 void wxImageExt::UnpremultiplyAlpha()
