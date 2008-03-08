@@ -3,13 +3,7 @@ Aorta is a utility for creating high quality DDS textures.
 Aorta is licensed under the GNU Public License. See the file COPYING for
 details.
 
-To create DXTC compressed textures, you must have an S3TC patent license
-or live in a country where the S3TC patent does not apply. If so, you
-can get the Squish library from http://www.sjbrown.co.uk/?code=squish.
-If you are on a Mac, get the framework, and copy squish.framework to
-/Library/Frameworks.
-
-Aorta is copyright 2006 by Gregory Smith
+Aorta is copyright 2006-2008 by Gregory Smith
 
 Special thanks go to:
 Simon Brown for his squish library
