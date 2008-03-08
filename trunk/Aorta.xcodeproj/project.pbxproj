@@ -10,6 +10,7 @@
 		AE0D48060AD8761E00FD3D5E /* DDSOptionsDialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0D48040AD8761E00FD3D5E /* DDSOptionsDialog.cpp */; };
 		AE196BC70D82FF6A004326F1 /* Filter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE196BC50D82FF6A004326F1 /* Filter.cpp */; };
 		AE196BC80D82FF6A004326F1 /* FloatImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE196BC60D82FF6A004326F1 /* FloatImage.cpp */; };
+		AE47D04B0D8338F800CA41ED /* Squish.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFCB5B00AC77A520004082D /* Squish.framework */; };
 		AE95AF910A16A4ED00E758BE /* Aorta-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = AED0D8D20A101D4800C61B65 /* Aorta-Info.plist */; };
 		AEA152AC0AC9DFEB00E8890F /* Aorta File.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEA152AB0AC9DFEB00E8890F /* Aorta File.icns */; };
 		AEBF58250A1025ED00C810B8 /* Aorta.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEBF58240A1025ED00C810B8 /* Aorta.icns */; };
@@ -18,6 +19,19 @@
 		AEFCB5B10AC77A520004082D /* Squish.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFCB5B00AC77A520004082D /* Squish.framework */; };
 		AEFE011A0A1979B700E99D09 /* imagdds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEFE01180A1979B700E99D09 /* imagdds.cpp */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AE47D0490D8338D500CA41ED /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				AE47D04B0D8338F800CA41ED /* Squish.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		AE0D48040AD8761E00FD3D5E /* DDSOptionsDialog.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = DDSOptionsDialog.cpp; sourceTree = "<group>"; };
@@ -100,6 +114,7 @@
 				AED0D8CC0A101D4800C61B65 /* Resources */,
 				AED0D8CD0A101D4800C61B65 /* Sources */,
 				AED0D8CE0A101D4800C61B65 /* Frameworks */,
+				AE47D0490D8338D500CA41ED /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -116,10 +131,12 @@
 		AED0D8B50A101C1500C61B65 /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = AED0D8B60A101C1500C61B65 /* Build configuration list for PBXProject "Aorta" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 0;
 			mainGroup = AED0D8B30A101C1500C61B65;
 			productRefGroup = AED0D8C70A101CBD00C61B65 /* Products */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				AED0D8CF0A101D4800C61B65 /* Aorta */,
 			);
