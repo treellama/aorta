@@ -45,11 +45,6 @@ static inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-bool HasS3TC()
-{
-    return ((void *) squish::CompressImage != (void *) squish::DecompressImage);
-}
-
 bool wxDDSHandler::ReadHeader(wxInputStream& stream, DDSURFACEDESC2 &ddsd)
 {
     // try to read the whole thing, then swap it
@@ -122,7 +117,7 @@ bool wxDDSHandler::DoCanRead(wxInputStream& stream)
     if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
 	return (ddsd.ddpfPixelFormat.dwRGBBitCount == 24 || ddsd.ddpfPixelFormat.dwRGBBitCount == 32);
     }
-    else if (HasS3TC() && (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
+    else if ((ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) &&
 	     (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '2') ||
 	      ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3') ||
@@ -190,7 +185,6 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	}
     }
     if (internalFormat == GL_NONE) return FALSE;
-    if (!HasS3TC() && (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT || internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT5_EXT)) return FALSE;
 
     int width = ddsd.dwWidth;
     int height = ddsd.dwHeight;
@@ -316,8 +310,6 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_COMPRESS);
     bool premultiply = image->HasOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA) &&
 	image->GetOptionInt(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA);
-
-    if (!HasS3TC() && compress) return FALSE;
 
     if (compress)  {
 	if ((image->GetHeight() & 3) || (image->GetWidth() & 3)) {

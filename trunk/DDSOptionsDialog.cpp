@@ -21,8 +21,6 @@
 
 #include "DDSOptionsDialog.h"
 
-extern bool HasS3TC(); // from imagdds
-
 DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix, bool HasAlpha)
 	: wxDialog(NULL, -1, wxT("DDS Options"), wxDefaultPosition, wxDefaultSize), m_prefix(prefix), m_hasAlpha(HasAlpha)
 {
@@ -50,15 +48,8 @@ void DDSOptionsDialog::fill_from_prefs()
 	config.SetPath(m_prefix);
 
 	bool value;
-	if (HasS3TC())
-	{
-		config.Read(wxT("UseDXTC"), &value, true);
-		useDXTC->SetValue(value ? 1 : 0);
-	}
-	else
-	{
-		useDXTC->SetValue(0);
-	}
+	config.Read(wxT("UseDXTC"), &value, true);
+	useDXTC->SetValue(value ? 1 : 0);
 	
 	config.Read(wxT("GenerateMipmaps"), &value, true);
 	generateMipmaps->SetValue(value ? 1 : 0);
@@ -83,8 +74,6 @@ void DDSOptionsDialog::fill_from_prefs()
 
 void DDSOptionsDialog::update_enablement()
 {
-	useDXTC->Enable(HasS3TC());
-
 	mipmapFilterChoice->Enable(generateMipmaps->GetValue());
 	colorFillBackground->Enable(generateMipmaps->GetValue() && m_hasAlpha);
 	reconstructColors->Enable(generateMipmaps->GetValue() && m_hasAlpha && colorFillBackground->GetValue());
