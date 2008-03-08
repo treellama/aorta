@@ -16,10 +16,15 @@
 #define wxIMAGE_OPTION_DDS_COMPRESS wxT("DdsCompress")
 #define wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA wxT("DdsPremultiplyAlpha")
 #define wxIMAGE_OPTION_DDS_MIPMAP_FILTER wxT("MipmapFilter")
+#define wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE wxT("WrapMode")
 
 #define wxIMAGE_OPTION_DDS_FILTER_BOX 0
 #define wxIMAGE_OPTION_DDS_FILTER_TRIANGLE 1
 #define wxIMAGE_OPTION_DDS_FILTER_KAISER 2
+
+#define wxIMAGE_OPTION_DDS_WRAP_CLAMP 0
+#define wxIMAGE_OPTION_DDS_WRAP_REPEAT 1
+#define wxIMAGE_OPTION_DDS_WRAP_MIRROR 2
 
 #ifndef __DDRAW_INCLUDED__
 
@@ -105,8 +110,9 @@ private:
 
     void WriteDXT1(const wxImage& image, wxOutputStream& stream);
     void WriteDXT5(const wxImage& image, wxOutputStream& stream);
-//    wxImage Minify(wxImage& image, int level);
-    wxImage Minify(wxImage& image);
+//    wxImage Minify(wxImage& image, int level);\
+private:
+    wxImage Minify(wxImage& image, long filter, long wrap_mode);
 #endif
     
 };

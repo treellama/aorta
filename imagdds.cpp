@@ -374,10 +374,19 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
     
     if (premultiply) 
 	PremultiplyAlpha(image);
+
+    long filter = wxIMAGE_OPTION_DDS_FILTER_BOX;
+    if (image->HasOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER))
+	filter = image->GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER);
+
+    long wrap_mode = wxIMAGE_OPTION_DDS_WRAP_CLAMP;
+    if (image->HasOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE))
+	wrap_mode = image->GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE);
+
     wxImage minImage = *image;
     
     for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
-	if (level) minImage = Minify(minImage);
+	if (level) minImage = Minify(minImage, filter, wrap_mode);
 	if (compress) {
 	    if (image->HasAlpha()) {
 		WriteDXT5(minImage, stream);
@@ -453,7 +462,7 @@ void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
     }	
 }
 
-wxImage wxDDSHandler::Minify(wxImage &image)
+wxImage wxDDSHandler::Minify(wxImage &image, long filter, long wrap_mode)
 {
     if (image.GetWidth() == 1 && image.GetHeight() == 1) return image;
 
@@ -476,22 +485,25 @@ wxImage wxDDSHandler::Minify(wxImage &image)
     // convert channels 0 through 2 (R through B) to linear space
     f.toLinear(0, 2);
 
+    wxImage minifiedImage;
+
+    FloatImage::WrapMode wm = FloatImage::WrapMode_Clamp;
+    if (wrap_mode == wxIMAGE_OPTION_DDS_WRAP_REPEAT)
+	wm = FloatImage::WrapMode_Repeat;
+    else if (wrap_mode == wxIMAGE_OPTION_DDS_WRAP_MIRROR)
+	wm = FloatImage::WrapMode_Mirror;
+
     std::auto_ptr<FloatImage> minif;
-    if (image.HasOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER)) {
-	if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_TRIANGLE) {
-	    TriangleFilter filter;
-	    minif.reset(f.downSample(TriangleFilter(), FloatImage::WrapMode_Mirror));
-	} else if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_KAISER) {
-	    minif.reset(f.downSample(KaiserFilter(3), FloatImage::WrapMode_Mirror));
-	} else {
-	    minif.reset(f.fastDownSample());
-	}
+    if (filter == wxIMAGE_OPTION_DDS_FILTER_TRIANGLE) {
+	TriangleFilter filter;
+	minif.reset(f.downSample(TriangleFilter(), wm));
+    } else if (filter == wxIMAGE_OPTION_DDS_FILTER_KAISER) {
+	minif.reset(f.downSample(KaiserFilter(3), wm));
     } else {
-	minif.reset(f.fastDownSample());
+	    minif.reset(f.fastDownSample());
     }
     
     minif->toGamma(0, 2);
-    wxImage minifiedImage;
     minifiedImage.Create(minif->width(), minif->height());
     
     for (int x = 0; x < minif->width(); ++x) {
