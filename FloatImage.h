@@ -14,6 +14,8 @@ class Kernel1;
 class Kernel2;
 class PolyphaseKernel;
 
+#define uint unsigned int
+
 /// Clamp between two values.
 template <typename T> 
 inline const T & clamp(const T & x, const T & a, const T & b)
