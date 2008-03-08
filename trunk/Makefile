@@ -32,7 +32,7 @@ WINPROGRAM = Aorta.exe
 # below
 OBJECTS = $(PROGRAM).o image_ext.o imagdds.o DDSOptionsDialog.o Filter.o FloatImage.o
 
-DISTFILES = aorta.cpp "Aorta File.icns" aorta.h Aorta.icns Aorta-Info.plist Aorta.xcodeproj/project.pbxproj COPYING DDSOptionsDialog.cpp DDSOptionsDialog.h Filter.cpp Filter.h FloatImage.cpp FloatImage.h imagdds.cpp imagdds.h image_ext.cpp image_ext.h Makefile README VERSION
+DISTFILES = aorta.cpp "Aorta File.icns" aorta.h Aorta.icns Aorta.ico aorta.rc Aorta-Info.plist Aorta.xcodeproj/project.pbxproj COPYING DDSOptionsDialog.cpp DDSOptionsDialog.h Filter.cpp Filter.h FloatImage.cpp FloatImage.h imagdds.cpp imagdds.h image_ext.cpp image_ext.h Makefile README VERSION
 
 # you shouldn't have to edit anything below this line
 CXX = $(shell $(WX_CONFIG) --cxx)
