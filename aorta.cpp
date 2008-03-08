@@ -460,7 +460,13 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	wxConfig config;
 	chooseFiles = new wxButton(this, BUTTON_ChooseFiles, wxT("Choose Source..."));
 	recurseCheckbox = new wxCheckBox(this, CHECKBOX_Recurse, wxT("Traverse (and recreate) subfolders"));
-	fileStatus = new wxTextCtrl(this, -1, wxT("No files selected"), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+
+	config.Read(wxT("Batch/Source"), &source, wxT(""));
+	if (source == wxT(""))
+		fileStatus = new wxTextCtrl(this, -1, wxT("No files selected"), wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+	else
+		fileStatus = new wxTextCtrl(this, -1, source, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+
 	findMasks = new wxCheckBox(this, BUTTON_FindMasks, wxT("Attempt to find masks"));
 	bool value;
 	config.Read(wxT("Batch/Recurse"), &value, true);
@@ -483,6 +489,9 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 //	destinationStatus->Wrap(300);
 
 	convert = new wxButton(this, BUTTON_Convert, wxT("Batch Convert..."));
+
+	saveAsDDS = new wxRadioButton(this, -1, wxT("Save as DDS"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	saveAsPNG = new wxRadioButton(this, -1, wxT("Save as PNG"));
 
 	do_layout();
 }
@@ -527,6 +536,12 @@ void BatchPage::do_layout()
 	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
 	topSizer->Add(chooseDestinationBox, 0, wxALL | wxEXPAND, 10);
 	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
+	wxBoxSizer *formatSizer = new wxBoxSizer(wxHORIZONTAL);
+	formatSizer->Add(saveAsDDS, 1, wxALL, 10);
+	formatSizer->AddSpacer(10);
+	formatSizer->Add(saveAsPNG, 1, wxALL, 10);
+	topSizer->Add(formatSizer, 0, wxALL, 10);
+	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 	topSizer->Add(convert, 0, wxALL, 20);
 	
 	SetAutoLayout(true);
@@ -549,6 +564,8 @@ void BatchPage::OnChooseSource(wxCommandEvent &)
 void BatchPage::ChooseSource(const wxString& folder)
 {
 	source = folder;
+	wxConfig config;
+	config.Write(wxT("Batch/Source"), source);
 //	fileStatus->SetLabel(folder);
 	fileStatus->SetValue(folder);
 //	fileStatus->Wrap(300);
@@ -582,7 +599,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 	wxArrayString filesToConvert;
 	// build an array of files to convert
 	wxDir::GetAllFiles(source, &filesToConvert, wxT(""), wxDIR_FILES | (recurseCheckbox->GetValue() ? wxDIR_DIRS : 0));
-	
+
 	// remove files beginning with .
 	wxArrayString filesWithDots = filesToConvert;
 	filesToConvert.Clear();
@@ -596,6 +613,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 	
 
 	bool useMasks = findMasks->GetValue();
+	bool toPNG = saveAsPNG->GetValue();
 
 	if (useMasks)
 	{
@@ -629,8 +647,9 @@ void BatchPage::OnConvert(wxCommandEvent &)
 
 	// get the DDS options
 	DDSOptionsDialog ddsOptions(wxT("Batch"), true);
-	if (ddsOptions.ShowModal() != wxID_OK) return;
-	
+	if (!toPNG)
+		if (ddsOptions.ShowModal() != wxID_OK) return;
+
 	wxProgressDialog pd(wxT("Converting"), wxT("Converting"), filesToConvert.Count(), NULL, wxPD_AUTO_HIDE | wxPD_APP_MODAL | wxPD_ELAPSED_TIME | wxPD_CAN_ABORT);
 
 	for (int i = 0; i < filesToConvert.Count(); i++)
@@ -649,14 +668,14 @@ void BatchPage::OnConvert(wxCommandEvent &)
 		wxFileName saveFile;
 		if (recurseCheckbox->GetValue())
 		{
-			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetPath() + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + wxT(".dds");
+			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetPath() + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + (toPNG ? wxT(".png") : wxT(".dds"));
 			wxFileName::Mkdir(saveFile.GetPath(), 0777, wxPATH_MKDIR_FULL);
 		} 
 		else
 		{
-			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + wxT(".dds");
+			saveFile = destination + wxFileName::GetPathSeparator() + wxFileName(filesToConvert[i]).GetName() + (toPNG ? wxT(".png") : wxT(".dds"));
 		}
-
+		
 		if (normalFile.GetName()[0] == '.') continue;
 		if (!normalImage.LoadFile(normalFile.GetFullPath())) continue;
 		if (!normalImage.Ok()) continue;
@@ -675,43 +694,46 @@ void BatchPage::OnConvert(wxCommandEvent &)
 			}
 		}
 
-		// set the image options
-		if (ddsOptions.generateMipmaps->GetValue())
-		{
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
-			if (ddsOptions.repeatingTexture->GetValue()) {
-			    normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_REPEAT);
-			} else {
-			    normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_CLAMP);
-			}
-
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
-
-			if (normalImage.HasAlpha() && ddsOptions.colorFillBackground->GetValue())
+		if (toPNG) {
+			normalImage.SaveFile(saveFile.GetFullPath(), wxBITMAP_TYPE_PNG);
+		} else {
+			// set the image options
+			if (ddsOptions.generateMipmaps->GetValue())
 			{
-				if (ddsOptions.reconstructColors->GetValue())
-					normalImage.ReconstructColors(ddsOptions.backgroundColor);
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+				if (ddsOptions.repeatingTexture->GetValue()) {
+					normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_REPEAT);
+				} else {
+					normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_CLAMP);
+				}
 
-				normalImage.PrepareForMipmaps();
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
+
+				if (normalImage.HasAlpha() && ddsOptions.colorFillBackground->GetValue())
+				{
+					if (ddsOptions.reconstructColors->GetValue())
+						normalImage.ReconstructColors(ddsOptions.backgroundColor);
+
+					normalImage.PrepareForMipmaps();
+				}
 			}
-		}
-		else
-		{
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
-		}
+			else
+			{
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
+			}
 
-		if (ddsOptions.useDXTC->GetValue())
-		{
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
-		} 
-		else
-		{
-			normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
+			if (ddsOptions.useDXTC->GetValue())
+			{
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
+			} 
+			else
+			{
+				normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
+			}
+
+			normalImage.SaveFile(saveFile.GetFullPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
 		}
-
-		normalImage.SaveFile(saveFile.GetFullPath(), wxDDSHandler::wxBITMAP_TYPE_DDS);
-
 	}
 }
 
