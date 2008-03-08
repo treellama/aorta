@@ -54,6 +54,7 @@ public:
 	wxCheckBox* useDXTC;
 	wxCheckBox* generateMipmaps;
 	wxChoice* mipmapFilterChoice;
+	wxCheckBox* repeatingTexture;
 	wxCheckBox* colorFillBackground;
 	wxCheckBox* reconstructColors;
 	wxButton* chooseBackground;

@@ -33,6 +33,9 @@ DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix, bool HasAlpha)
 	filterChoices.Add(wxT("Triangle"));
 	filterChoices.Add(wxT("Kaiser"));
 	mipmapFilterChoice = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, filterChoices);
+
+	repeatingTexture = new wxCheckBox(this, -1, wxT("Image Repeats"));
+
 	colorFillBackground = new wxCheckBox(this, BUTTON_ColorFillBackground, wxT("Fast Halo Removal"));
 	reconstructColors = new wxCheckBox(this, BUTTON_ReconstructColors, wxT("Reconstruct Edge Colors"));
 	chooseBackground = new wxButton(this, BUTTON_ChooseBackground, wxT("Choose Background Color..."));
@@ -58,6 +61,9 @@ void DDSOptionsDialog::fill_from_prefs()
 	config.Read(wxT("MipmapFilter"), &filter, 1);
 	mipmapFilterChoice->SetSelection(filter);
 
+	config.Read(wxT("WrapMode"), &filter, 1);
+	repeatingTexture->SetValue((filter == 1) ? 1 : 0);
+
 	wxString haloRemovalStrategy;
 	config.Read(wxT("FastHaloRemoval"), &value, true);
 	colorFillBackground->SetValue(value ? 1 : 0);
@@ -74,6 +80,7 @@ void DDSOptionsDialog::fill_from_prefs()
 
 void DDSOptionsDialog::update_enablement()
 {
+	repeatingTexture->Enable(generateMipmaps->GetValue());
 	mipmapFilterChoice->Enable(generateMipmaps->GetValue());
 	colorFillBackground->Enable(generateMipmaps->GetValue() && m_hasAlpha);
 	reconstructColors->Enable(generateMipmaps->GetValue() && m_hasAlpha && colorFillBackground->GetValue());
@@ -89,6 +96,7 @@ bool DDSOptionsDialog::Validate()
 	if (generateMipmaps->GetValue())
 	{
 		config.Write(wxT("MipmapFilter"), mipmapFilterChoice->GetSelection());
+		config.Write(wxT("WrapMode"), repeatingTexture->GetValue() ? 1 : 0);
 		if (colorFillBackground->GetValue())
 		{
 			config.Write(wxT("FastHaloRemoval"), true);
@@ -112,17 +120,18 @@ void DDSOptionsDialog::do_layout()
 	// begin wxGlade: MyFrame::do_layout
 	wxBoxSizer* topSizer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* mipmapIndenter = new wxBoxSizer(wxHORIZONTAL);
-	wxBoxSizer* mipmapFilterIndenter = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* mipmapSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* mipmapFilterSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxStaticBoxSizer* mipmapBox = new wxStaticBoxSizer(mipmapBox_staticbox, wxVERTICAL);
 	wxBoxSizer* colorFillIndenter = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* colorFillBox = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* chooseBackgroundIndenter = new wxBoxSizer(wxHORIZONTAL);
-	mipmapFilterIndenter->Add(20, 10, 0, wxADJUST_MINSIZE, 0);
-	mipmapFilterIndenter->Add(new wxStaticText(this, -1, wxT("Filter:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
-	mipmapFilterIndenter->Add(mipmapFilterChoice, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND);
+	mipmapFilterSizer->Add(new wxStaticText(this, -1, wxT("Filter:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
+	mipmapFilterSizer->Add(mipmapFilterChoice, 1, wxALIGN_CENTER_VERTICAL | wxEXPAND);
 	topSizer->Add(useDXTC, 0, wxALL |wxADJUST_MINSIZE, 10);
 	topSizer->Add(generateMipmaps, 0, wxLEFT|wxRIGHT|wxBOTTOM|wxADJUST_MINSIZE, 10);
-	topSizer->Add(mipmapFilterIndenter, 0, wxALL | wxADJUST_MINSIZE | wxEXPAND, 10);
+	mipmapSizer->Add(repeatingTexture, 0, wxRIGHT|wxLEFT|wxBOTTOM | wxADJUST_MINSIZE|wxEXPAND, 10);
+	mipmapSizer->Add(mipmapFilterSizer, 0, wxRIGHT|wxLEFT|wxBOTTOM| wxADJUST_MINSIZE | wxEXPAND, 10);
 	mipmapIndenter->Add(20, 20, 0, wxADJUST_MINSIZE, 1);
 	mipmapBox->Add(colorFillBackground, 0, wxALL|wxADJUST_MINSIZE, 10);
 	colorFillIndenter->Add(20, 20, 0, wxADJUST_MINSIZE, 0);
@@ -132,7 +141,8 @@ void DDSOptionsDialog::do_layout()
 	colorFillBox->Add(chooseBackgroundIndenter, 1, wxEXPAND, 0);
 	colorFillIndenter->Add(colorFillBox, 1, wxEXPAND, 0);
 	mipmapBox->Add(colorFillIndenter, 1, wxEXPAND, 0);
-	mipmapIndenter->Add(mipmapBox, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
+	mipmapSizer->Add(mipmapBox, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
+	mipmapIndenter->Add(mipmapSizer, 1, wxLEFT|wxRIGHT|wxBOTTOM|wxEXPAND, 10);
 	topSizer->Add(mipmapIndenter, 1, wxEXPAND, 0);
 	wxBoxSizer *buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 	wxButton *cancelButton = new wxButton(this, wxID_CANCEL);

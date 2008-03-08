@@ -288,6 +288,12 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 	
 		if (ddsOptions.generateMipmaps->GetValue()) {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+
+			if (ddsOptions.repeatingTexture->GetValue()) {
+			    saveImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_REPEAT);
+			} else {
+			    saveImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_CLAMP);
+			}
 			
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
@@ -673,6 +679,12 @@ void BatchPage::OnConvert(wxCommandEvent &)
 		if (ddsOptions.generateMipmaps->GetValue())
 		{
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 1);
+			if (ddsOptions.repeatingTexture->GetValue()) {
+			    normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_REPEAT);
+			} else {
+			    normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_WRAP_MODE, wxIMAGE_OPTION_DDS_WRAP_CLAMP);
+			}
+
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER, ddsOptions.mipmapFilterChoice->GetSelection());
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_PREMULTIPLY_ALPHA, 0);
 
