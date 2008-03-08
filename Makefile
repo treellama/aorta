@@ -31,6 +31,7 @@ PROGRAM = aorta
 # below
 OBJECTS = $(PROGRAM).o image_ext.o imagdds.o DDSOptionsDialog.o Filter.o FloatImage.o
 
+DISTFILES = aorta.cpp "Aorta File.icns" aorta.h Aorta.icns Aorta-Info.plist Aorta.xcodeproj/project.pbxproj COPYING DDSOptionsDialog.cpp DDSOptionsDialog.h Filter.cpp Filter.h FloatImage.cpp FloatImage.h imagdds.cpp imagdds.h image_ext.cpp image_ext.h Makefile README VERSION
 
 # you shouldn't have to edit anything below this line
 CXX = $(shell $(WX_CONFIG) --cxx)
@@ -52,6 +53,9 @@ $(PROGRAM):	$(OBJECTS)
 
 clean: 
 	rm -f *.o $(PROGRAM)
+
+dist:
+	tar -cjf aorta-`cat VERSION`.tar.bz2 --transform='s,^,aorta/,'  $(DISTFILES)
 
 aorta.o: aorta.cpp aorta.h DDSOptionsDialog.h image_ext.h imagdds.h
 imagdds.o: imagdds.h Filter.o FloatImage.o
