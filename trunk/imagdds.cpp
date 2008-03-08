@@ -14,16 +14,6 @@
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
 #include <wx/wx.h>
-#ifndef __WIN32__
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES 1
-#endif
-#endif
-#include <wx/glcanvas.h>
-#endif
-
-#ifdef __APPLE__
-#include <OpenGL/glu.h>
 #endif
 
 #include <squish.h>
@@ -35,6 +25,15 @@
 #include <algorithm>
 #include <vector>
 using namespace std;
+
+enum InternalFormat {
+	Format_None,
+	Format_DXT1,
+	Format_DXT3,
+	Format_DXT5,
+	Format_RGB,
+	Format_RGBA
+};
 
 #define MAKE_FOURCC(a,b,c,d) (((wxUint32(d) << 24) | (wxUint32)(c) << 16) | ((wxUint32)(b) << 8) | (wxUint32)(a))
 
@@ -161,35 +160,35 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     bool unpremultiplyAlpha = false;
     
     // just read the first mipmap
-    GLenum internalFormat = GL_NONE;
+    InternalFormat internalFormat = Format_None;
     if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
 	if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '1'))
-	    internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+	    internalFormat = Format_DXT1;
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '2')) {
 	    unpremultiplyAlpha = true;
-	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	    internalFormat = Format_DXT3;
 	}
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '3'))
-	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+	    internalFormat = Format_DXT3;
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '4')) {
 	    unpremultiplyAlpha = true;
-	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	    internalFormat = Format_DXT5;
 	}
 	else if (ddsd.ddpfPixelFormat.dwFourCC == MAKE_FOURCC('D', 'X', 'T', '5'))
-	    internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+	    internalFormat = Format_DXT5;
     } else if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
 	if (ddsd.ddpfPixelFormat.dwRGBBitCount == 24) {
-	    internalFormat = GL_RGB;
+	    internalFormat = Format_RGB;
 	} else if (ddsd.ddpfPixelFormat.dwRGBBitCount == 32) {
-	    internalFormat = GL_RGBA;
+	    internalFormat = Format_RGBA;
 	}
     }
-    if (internalFormat == GL_NONE) return FALSE;
+    if (internalFormat == Format_None) return FALSE;
 
     int width = ddsd.dwWidth;
     int height = ddsd.dwHeight;
 
-    if (internalFormat == GL_RGB || internalFormat == GL_RGBA) {
+    if (internalFormat == Format_RGB || internalFormat == Format_RGBA) {
 	int pitch;
 	if (ddsd.dwFlags & DDSD_PITCH) {
 	    pitch = ddsd.dwPitchOrLinearSize;
@@ -197,14 +196,14 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	    pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
 	}
 
-	if (pitch != ((internalFormat == GL_RGB) ? 3 : 4) * width)
+	if (pitch != ((internalFormat == Format_RGB) ? 3 : 4) * width)
 	{
 	    fprintf(stderr, "we don't know how to do weird pitch\n");
 	    return FALSE;
 	}
 
 	image->Create(width, height);
-	if (internalFormat == GL_RGBA) 
+	if (internalFormat == Format_RGBA) 
 	    image->InitAlpha();
 	for (int y = 0; y < height; y++) {
 	    for (int x = 0; x < width; x++) {
@@ -223,7 +222,7 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 
 		image->SetRGB(x, y, r, g, b);
 
-		if (internalFormat == GL_RGBA)
+		if (internalFormat == Format_RGBA)
 		{
 		    image->SetAlpha(x, y, stream.GetC());
 		    if (stream.LastRead() != 1) {
@@ -236,13 +235,13 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	return TRUE;
     }
     
-    int bpp = (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) ? 4 : 8;
+    int bpp = (internalFormat == Format_DXT1) ? 4 : 8;
     int potWidth = NextPowerOfTwo(width);
     int potHeight = NextPowerOfTwo(height);
 
     int compressedBufferSize = (potWidth * potHeight * bpp) / 8;
 
-    vector<GLbyte> compressedBuffer(width * height * bpp / 8);
+    vector<unsigned char> compressedBuffer(width * height * bpp / 8);
     stream.Read(&compressedBuffer.front(), compressedBuffer.size());
     if (stream.LastRead() != compressedBuffer.size()) {
 	return FALSE;
@@ -251,10 +250,10 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
     image->Create(width, height);
     vector<unsigned char> uncompressedBuffer(width * height * 4);
     int flags;
-    if (internalFormat == GL_COMPRESSED_RGB_S3TC_DXT1_EXT) {
+    if (internalFormat == Format_DXT1) {
 	flags = squish::kDxt1;
     } else {
-	if (internalFormat == GL_COMPRESSED_RGBA_S3TC_DXT3_EXT) {
+	if (internalFormat == Format_DXT3) {
 	    flags = squish::kDxt3;
 	} else {
 	    flags = squish::kDxt5;
