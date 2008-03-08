@@ -127,7 +127,7 @@ private:
 	wxButton *opacTypeThree;
 	wxStaticBitmap *maskImageStatic;
 	wxStaticText *maskStatus;
-	
+
 	wxButton *saveAsButton;
 };
 
@@ -161,6 +161,9 @@ private:
 
 	wxButton *selectDestination;
 	wxTextCtrl *destinationStatus;
+
+	wxRadioButton *saveAsDDS;
+	wxRadioButton *saveAsPNG;
 
 	wxButton *convert;
 
