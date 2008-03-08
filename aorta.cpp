@@ -24,8 +24,6 @@
 
 IMPLEMENT_APP(MainApp)  
 
-extern bool HasS3TC(); // from imagdds
-
 bool MainApp::OnInit() 
 { 
 	::wxInitAllImageHandlers();
@@ -38,9 +36,6 @@ bool MainApp::OnInit()
 	if (argc > 1)
 		MainWin->LoadNormal(argv[1]);
 
-	if (!HasS3TC())
-		wxMessageBox(_T("Can not locate Squish Framework. To enable DXTC support, download squish.framework from http://www.sjbrown.co.uk/?code=squish and copy it to your ~/Library/Frameworks folder."), _T("Warning"), wxOK);
-	
 	return TRUE;
 } 
 
@@ -309,7 +304,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
 		}
 
-		if (HasS3TC() && ddsOptions.useDXTC->GetValue()) {
+		if (ddsOptions.useDXTC->GetValue()) {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
 		} else {
 			saveImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 0);
@@ -694,7 +689,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_USE_MIPMAPS, 0);
 		}
 
-		if (HasS3TC() && ddsOptions.useDXTC->GetValue())
+		if (ddsOptions.useDXTC->GetValue())
 		{
 			normalImage.SetOption(wxIMAGE_OPTION_DDS_COMPRESS, 1);
 		} 

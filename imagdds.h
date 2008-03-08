@@ -103,7 +103,6 @@ private:
     // handles RGB too
     void WriteRGBA(const wxImage& image, wxOutputStream& stream);
 
-    // these functions assume an OpenGL context
     void WriteDXT1(const wxImage& image, wxOutputStream& stream);
     void WriteDXT5(const wxImage& image, wxOutputStream& stream);
 //    wxImage Minify(wxImage& image, int level);
