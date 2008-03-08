@@ -491,6 +491,7 @@ BatchPage::BatchPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	convert = new wxButton(this, BUTTON_Convert, wxT("Batch Convert..."));
 
 	saveAsDDS = new wxRadioButton(this, -1, wxT("Save as DDS"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	saveAsDDS->SetValue(1);
 	saveAsPNG = new wxRadioButton(this, -1, wxT("Save as PNG"));
 
 	do_layout();
