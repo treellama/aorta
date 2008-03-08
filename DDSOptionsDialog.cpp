@@ -31,9 +31,9 @@ DDSOptionsDialog::DDSOptionsDialog(const wxString& prefix, bool HasAlpha)
 	useDXTC = new wxCheckBox(this, -1, wxT("Use DXTC (Texture Compression)"));
 	generateMipmaps = new wxCheckBox(this, BUTTON_GenerateMipmaps, wxT("Generate Mipmaps"));
 	wxArrayString filterChoices;
+	filterChoices.Add(wxT("Box"));
 	filterChoices.Add(wxT("Triangle"));
-	filterChoices.Add(wxT("Mitchell (Bicubic)"));
-	filterChoices.Add(wxT("Lanczos"));
+	filterChoices.Add(wxT("Kaiser"));
 	mipmapFilterChoice = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, filterChoices);
 	colorFillBackground = new wxCheckBox(this, BUTTON_ColorFillBackground, wxT("Fast Halo Removal"));
 	reconstructColors = new wxCheckBox(this, BUTTON_ReconstructColors, wxT("Reconstruct Edge Colors"));

@@ -28,6 +28,9 @@
 
 #include <squish.h>
 
+#include "Filter.h"
+#include "FloatImage.h"
+
 #include "math.h"
 #include <algorithm>
 #include <vector>
@@ -382,7 +385,7 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
     wxImage minImage = *image;
     
     for (int level = 0; level < ((mipmap) ? mipmap_count : 1); level++) {
-	minImage = Minify(*image, level);
+	if (level) minImage = Minify(minImage);
 	if (compress) {
 	    if (image->HasAlpha()) {
 		WriteDXT5(minImage, stream);
@@ -458,86 +461,67 @@ void wxDDSHandler::WriteRGBA(const wxImage& image, wxOutputStream& stream)
     }	
 }
 
-typedef	unsigned char	Pixel;
-
-typedef struct {
-	int	xsize;		/* horizontal size of the image in Pixels */
-	int	ysize;		/* vertical size of the image in Pixels */
-	Pixel *	data;		/* pointer to first scanline of image */
-	int	span;		/* byte offset between two scanlines */
-} Image;
-
-extern "C" {
-#define	triangle_support	(1.0)
-#define Mitchell_support        (2.0)
-#define	Lanczos3_support	(3.0)
-
-    extern double box_filter(double);
-    extern double triangle_filter(double);
-    extern double Lanczos3_filter(double);
-    extern double Mitchell_filter(double);
-    
-    extern void zoom(Image *dst, Image *src, double (*filterf)(double), double fwidth);
-}
-
-wxImage wxDDSHandler::Minify(wxImage &image, int level)
+wxImage wxDDSHandler::Minify(wxImage &image)
 {
-    wxImage minifiedImage;
-    if (level == 0) return image;
+    if (image.GetWidth() == 1 && image.GetHeight() == 1) return image;
 
-    minifiedImage.Create(std::max(image.GetWidth() >> level, 1), std::max(image.GetHeight() >> level, 1));
-    
-    // to use filtered scales, we need to do a channel at a time
-    vector<Pixel> srcPlane(image.GetWidth() * image.GetHeight());
-    vector<Pixel> dstPlane(minifiedImage.GetWidth() * minifiedImage.GetHeight());
+    FloatImage f;
 
-    double (*f)(double);
-    double s;
+    f.allocate(4, image.GetWidth(), image.GetHeight());
+    for (int x = 0; x < image.GetWidth(); ++x) {
+	for (int y = 0; y < image.GetHeight(); ++y) {
+	    f.setPixel(image.GetRed(x, y) / 255.0f, x, y, 0);
+	    f.setPixel(image.GetGreen(x, y) / 255.0f, x, y, 1);
+	    f.setPixel(image.GetBlue(x, y) / 255.0f, x, y, 2);
+	    if (image.HasAlpha()) {
+		f.setPixel(image.GetAlpha(x, y) / 255.0f, x, y, 3);
+	    } else {
+		f.setPixel(1.0f, x, y, 3);
+	    }
+	}
+    }
 
-    if (image.HasOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER))
-    {
+    // convert channels 0 through 2 (R through B) to linear space
+    f.toLinear(0, 2);
+
+    std::auto_ptr<FloatImage> minif;
+    if (image.HasOption(wxIMAGE_OPTION_DDS_MIPMAP_FILTER)) {
 	if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_TRIANGLE) {
-	    f = triangle_filter;
-	    s = triangle_support;
-	} else if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_LANCZOS) {
-	    f = Lanczos3_filter;
-	    s = Lanczos3_support;
+	    TriangleFilter filter;
+	    minif.reset(f.downSample(TriangleFilter(), FloatImage::WrapMode_Mirror));
+	} else if (image.GetOptionInt(wxIMAGE_OPTION_DDS_MIPMAP_FILTER) == wxIMAGE_OPTION_DDS_FILTER_KAISER) {
+	    minif.reset(f.downSample(KaiserFilter(3), FloatImage::WrapMode_Mirror));
 	} else {
-	    f = Mitchell_filter;
-	    s = Mitchell_support;
+	    minif.reset(f.fastDownSample());
 	}
     } else {
-	f = Mitchell_filter;
-	s = Mitchell_support;
+	minif.reset(f.fastDownSample());
     }
-
-    Image src = { image.GetWidth(), image.GetHeight(), &srcPlane.front(), image.GetWidth() };
-    Image dst = { minifiedImage.GetWidth(), minifiedImage.GetHeight(), &dstPlane.front(), minifiedImage.GetWidth() };
-
-    // copy the plane into the vector, zoom, then copy it out
-    for (int c = 0; c < 3; c++) {
-	for (int i = 0; i < image.GetWidth() * image.GetHeight(); i++)
-	{
-	    srcPlane[i] = image.GetData()[i * 3 + c];
-	}
-	
-	zoom(&dst, &src, f, s);
-
-	for (int i = 0; i < minifiedImage.GetWidth() * minifiedImage.GetHeight(); i++)
-	{
-	    minifiedImage.GetData()[i * 3 + c] = dstPlane[i];
+    
+    minif->toGamma(0, 2);
+    wxImage minifiedImage;
+    minifiedImage.Create(minif->width(), minif->height());
+    
+    for (int x = 0; x < minif->width(); ++x) {
+	for (int y = 0; y < minif->height(); ++y) {
+	    unsigned int r = clamp((int) (minif->pixel(x, y, 0) * 255.0f), 0, 255);
+	    unsigned int g = clamp((int) (minif->pixel(x, y, 1) * 255.0f), 0, 255);
+	    unsigned int b = clamp((int) (minif->pixel(x, y, 2) * 255.0f), 0, 255);
+	    minifiedImage.SetRGB(x, y, r, g, b);
 	}
     }
 
-    if (image.HasAlpha())
-    {
+    if (image.HasAlpha()) {
 	minifiedImage.InitAlpha();
-	src.data = image.GetAlpha();
-	dst.data = minifiedImage.GetAlpha();
-
-	zoom(&dst, &src, f, s);
+	for (int x = 0; x < minif->width(); ++x) {
+	    for (int y = 0; y < minif->height(); ++y) {
+		minifiedImage.SetAlpha(x, y, clamp((int) (minif->pixel(x, y, 3) * 255.0f), 0, 255));
+	    }
+	}
     }
 
     return minifiedImage;
 }
+
+
     

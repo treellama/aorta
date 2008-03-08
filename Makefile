@@ -29,7 +29,7 @@ PROGRAM = aorta
 
 # if your program has more than one source file, add more .o files to the line
 # below
-OBJECTS = $(PROGRAM).o image_ext.o imagdds.o DDSOptionsDialog.o filter.o
+OBJECTS = $(PROGRAM).o image_ext.o imagdds.o DDSOptionsDialog.o Filter.o FloatImage.o
 
 
 # you shouldn't have to edit anything below this line
@@ -54,7 +54,9 @@ clean:
 	rm -f *.o $(PROGRAM)
 
 aorta.o: aorta.cpp aorta.h DDSOptionsDialog.h image_ext.h imagdds.h
-imagdds.o: imagdds.h filter.o
+imagdds.o: imagdds.h Filter.o FloatImage.o
 image_ext.o: image_ext.cpp image_ext.h
 DDSOptionsDialog.o: DDSOptionsDialog.h aorta.h
+Filter.o: Filter.cpp Filter.h
+FloatImage.o: FloatImage.cpp FloatImage.h
 # DO NOT DELETE
