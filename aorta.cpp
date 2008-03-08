@@ -70,7 +70,11 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 	batchPage = new BatchPage(notebook, -1, wxDefaultPosition, wxDefaultSize);
 	notebook->AddPage(batchPage, wxT("Batch Convert"), false);
 
+#ifdef __WIN32__
+	topsizer->Add(notebook, 1, wxEXPAND);
+#else
 	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+#endif
 
 	SetAutoLayout(TRUE);
 	SetSizer(topsizer);

@@ -26,6 +26,7 @@ WX_CONFIG := wx-config
 
 # set this to the name of the main executable file
 PROGRAM = aorta
+WINPROGRAM = Aorta.exe
 
 # if your program has more than one source file, add more .o files to the line
 # below
@@ -50,6 +51,13 @@ all:    $(PROGRAM)
 
 $(PROGRAM):	$(OBJECTS)
 	$(CXX) $(OPTFLAGS) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish
+
+resources.o: aorta.rc
+	i386-mingw32-windres -o resources.o aorta.rc
+
+$(WINPROGRAM): $(OBJECTS) resources.o
+	$(CXX) $(OPTFLAGS) -o $(WINPROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish resources.o
+	strip -S $(WINPROGRAM)
 
 clean: 
 	rm -f *.o $(PROGRAM)
