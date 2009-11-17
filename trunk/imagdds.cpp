@@ -23,6 +23,7 @@
 
 #include "math.h"
 #include <algorithm>
+#include <memory>
 #include <vector>
 using namespace std;
 
