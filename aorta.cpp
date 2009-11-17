@@ -137,6 +137,9 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	
 	unpremultiplyAlpha = new wxButton(this, BUTTON_UnpremultiplyAlpha, wxT("Un-Premultiply Alpha"));
 	column[0]->Add(unpremultiplyAlpha, 0, wxALIGN_CENTER | wxALL, 10);
+
+	normalMap = new wxButton(this, BUTTON_MakeNormalMap, wxT("Make Normal Map"));
+	column[0]->Add(normalMap, 0, wxALIGN_CENTER | wxALL, 10);
 	
 	pageSizer->Add(column[0], 0, wxEXPAND | wxALL, 10);
 	
@@ -246,6 +249,15 @@ void BasicPage::OnUnpremultiplyAlpha(wxCommandEvent &)
 	normalImage.UnpremultiplyAlpha();
 	UpdateNormalDisplay();
 }
+
+void BasicPage::OnMakeNormalMap(wxCommandEvent&)
+{
+	normalImage.MakeOpacTypeTwo();
+	maskImage = normalImage;
+	normalImage.MakeNormalMap();
+	UpdateNormalDisplay();
+	UpdateMaskDisplay();
+}	
 
 void BasicPage::OnSaveAs(wxCommandEvent &)
 {
@@ -799,6 +811,7 @@ EVT_BUTTON(BUTTON_OpacTypeTwo, BasicPage::OnOpacTypeTwo)
 EVT_BUTTON(BUTTON_OpacTypeThree, BasicPage::OnOpacTypeThree)
 EVT_BUTTON(BUTTON_SaveAs, BasicPage::OnSaveAs)
 EVT_BUTTON(BUTTON_UnpremultiplyAlpha, BasicPage::OnUnpremultiplyAlpha)
+EVT_BUTTON(BUTTON_MakeNormalMap, BasicPage::OnMakeNormalMap)
 END_EVENT_TABLE()
 
 BEGIN_EVENT_TABLE(BatchPage, wxPanel)

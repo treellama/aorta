@@ -48,6 +48,7 @@ public:
 	void ToAlpha(wxImageExt& dest) const; // export our grayscale representation to the dest's alpha channel
 	void MakeOpacTypeTwo();
 	void MakeOpacTypeThree();
+	void MakeNormalMap();
 
 	void UnpremultiplyAlpha();
 

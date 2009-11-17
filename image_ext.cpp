@@ -20,6 +20,7 @@
  */
 
 #include "image_ext.h"
+#include <cmath>
 #include <vector>
 
 void wxImageExt::White()
@@ -125,6 +126,50 @@ void wxImageExt::MakeOpacTypeThree()
 	}
 	
 	*this = image;
+}
+
+void wxImageExt::MakeNormalMap()
+{
+	wxImageExt image;
+	image.Create(GetWidth(), GetHeight());
+
+	float fs, ft, fr, fd;
+	unsigned char mat[3][3];
+
+	for (int y = 1; y < GetHeight() - 1; ++y) {
+		for (int x = 1; x < GetWidth() - 1; ++x) {
+			mat[0][0] = GetBlue(x - 1, y - 1);
+			mat[0][1] = GetBlue(x, y - 1);
+			mat[0][2] = GetBlue(x + 1, y - 1);
+			mat[1][0] = GetBlue(x - 1, y);
+			mat[1][2] = GetBlue(x + 1, y);
+			mat[2][0] = GetBlue(x - 1, y + 1);
+			mat[2][1] = GetBlue(x, y + 1);
+			mat[2][2] = GetBlue(x + 1, y + 1);
+
+			// Sobel operator horizontal
+			fs = (1.0 * mat[0][0] - 1.0 * mat[0][2] + 
+			      2.0 * mat[1][0] - 2.0 * mat[1][2] +
+			      1.0 * mat[2][0] - 1.0 * mat[2][2]) / 255.0;
+
+			ft = (1.0 * mat[2][0] - 1.0 * mat[0][0] +
+			      2.0 * mat[2][1] - 2.0 * mat[0][1] +
+			      1.0 * mat[2][2] - 1.0 * mat[0][2]) / 255.0;
+
+			fr = 0.5 * std::sqrt(1.0 + fs * fs + ft * ft);
+
+			// normalize vector (r, s, t)
+			fd = 1.0 / std::sqrt(fr * fr + fs * fs + ft * ft);
+			fs *= fd;
+			ft *= fd;
+			fr *= fd;
+
+			image.SetRGB(x, y, (unsigned char) (0x80 + fr * 0x7f), (unsigned char) (0x80 + ft * 0x7f), (unsigned char) (0x80 + fs * 0x7f));
+		}
+	}		
+	
+	*this = image;
+			
 }
 
 // thanks to the Virtual Terrain Project for this algorithm, and the code looks
