@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <math.h>
+#include <cstring>
 #include "Filter.h"
 
 #ifndef PI
