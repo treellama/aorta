@@ -164,7 +164,7 @@ void wxImageExt::MakeNormalMap()
 			ft *= fd;
 			fr *= fd;
 
-			image.SetRGB(x, y, (unsigned char) (0x80 + fr * 0x7f), (unsigned char) (0x80 + ft * 0x7f), (unsigned char) (0x80 + fs * 0x7f));
+			image.SetRGB(x, y, (unsigned char) (0x80 + fs * 0x7f), (unsigned char) (0x80 + ft * 0x7f), (unsigned char) (0x80 + fr * 0x7f));
 		}
 	}		
 	
