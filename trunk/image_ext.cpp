@@ -128,6 +128,12 @@ void wxImageExt::MakeOpacTypeThree()
 	*this = image;
 }
 
+static inline unsigned char WrapBlue(const wxImageExt& image, int x, int y, int w, int h) {
+	if (x < 0) x += w; else if (x > w - 1) x -= w;
+	if (y < 0) y += h; else if (y > h - 1) y -= h;
+	return image.GetData()[(y * w + x) * 3 + 2];
+}
+
 void wxImageExt::MakeNormalMap()
 {
 	wxImageExt image;
@@ -136,16 +142,19 @@ void wxImageExt::MakeNormalMap()
 	float fs, ft, fr, fd;
 	unsigned char mat[3][3];
 
-	for (int y = 1; y < GetHeight() - 1; ++y) {
-		for (int x = 1; x < GetWidth() - 1; ++x) {
-			mat[0][0] = GetBlue(x - 1, y - 1);
-			mat[0][1] = GetBlue(x, y - 1);
-			mat[0][2] = GetBlue(x + 1, y - 1);
-			mat[1][0] = GetBlue(x - 1, y);
-			mat[1][2] = GetBlue(x + 1, y);
-			mat[2][0] = GetBlue(x - 1, y + 1);
-			mat[2][1] = GetBlue(x, y + 1);
-			mat[2][2] = GetBlue(x + 1, y + 1);
+	int width = GetWidth();
+	int height = GetHeight();
+
+	for (int y = 0; y < height; ++y) {
+		for (int x = 0; x < width; ++x) {
+			mat[0][0] = WrapBlue(*this, x - 1, y - 1, width, height);
+			mat[0][1] = WrapBlue(*this, x, y - 1, width, height);
+			mat[0][2] = WrapBlue(*this, x + 1, y - 1, width, height);
+			mat[1][0] = WrapBlue(*this, x - 1, y, width, height);
+			mat[1][2] = WrapBlue(*this, x + 1, y, width, height);
+			mat[2][0] = WrapBlue(*this, x - 1, y + 1, width, height);
+			mat[2][1] = WrapBlue(*this, x, y + 1, width, height);
+			mat[2][2] = WrapBlue(*this, x + 1, y + 1, width, height);
 
 			// Sobel operator horizontal
 			fs = (1.0 * mat[0][0] - 1.0 * mat[0][2] + 
