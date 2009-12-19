@@ -89,7 +89,7 @@ void MainFrame::OnExit(wxCommandEvent& event)
 
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
-	wxMessageBox(wxT("Aorta 2.0 (the Aleph One Replacement Texture Accessory)\n(C) 2006-2008 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), wxT("About Aorta"), wxOK);
+	wxMessageBox(wxT("Aorta 2.1 (the Aleph One Replacement Texture Accessory)\n(C) 2006-2008 Gregory Smith\n\nAorta is licensed under the GPL. See COPYING.txt"), wxT("About Aorta"), wxOK);
 }
 
 void MainFrame::OnLoadNormal(wxCommandEvent& event)
