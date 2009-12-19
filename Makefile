@@ -53,7 +53,7 @@ $(PROGRAM):	$(OBJECTS)
 	$(CXX) $(OPTFLAGS) -o $(PROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish
 
 resources.o: aorta.rc
-	i386-mingw32-windres -o resources.o aorta.rc
+	i686-pc-mingw32-windres -o resources.o aorta.rc
 
 $(WINPROGRAM): $(OBJECTS) resources.o
 	$(CXX) $(OPTFLAGS) -o $(WINPROGRAM) $(OBJECTS) `$(WX_CONFIG) --libs std` -lsquish resources.o
