@@ -193,8 +193,10 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	int pitch;
 	if (ddsd.dwFlags & DDSD_PITCH) {
 	    pitch = ddsd.dwPitchOrLinearSize;
-	} else {
+	} else if (ddsd.dwFlags & DDSD_LINEARSIZE) {
 	    pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
+	} else {
+	    pitch = ((internalFormat == Format_RGB) ? 3 : 4) * width;
 	}
 
 	if (pitch != ((internalFormat == Format_RGB) ? 3 : 4) * width)
