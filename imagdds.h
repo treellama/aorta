@@ -84,15 +84,13 @@ struct DDSURFACEDESC2
 class wxDDSHandler : public wxImageHandler
 {
 public:
-    enum {
-	wxBITMAP_TYPE_DDS = wxBITMAP_TYPE_ANY + 1
-    };
+    static const wxBitmapType wxBITMAP_TYPE_DDS = static_cast<wxBitmapType>(wxBITMAP_TYPE_ANY + 1);
     
     wxDDSHandler() 
 	{
 	    m_name = _T("Direct Draw Surface file");
 	    m_extension = _T("dds");
-	    m_type = static_cast<wxBitmapType>(wxBITMAP_TYPE_DDS);
+	    m_type = wxBITMAP_TYPE_DDS;
 	}
 #if wxUSE_STREAMS
     virtual bool SaveFile ( wxImage *image, wxOutputStream& stream, bool verbose=true );
