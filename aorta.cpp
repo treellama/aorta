@@ -29,7 +29,7 @@ bool MainApp::OnInit()
 	::wxInitAllImageHandlers();
 	wxDDSHandler *ddsHandler = new wxDDSHandler;
 	wxImage::AddHandler(ddsHandler);
-	MainWin = new MainFrame(_("Aorta"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~ (wxRESIZE_BORDER | wxRESIZE_BOX | wxMAXIMIZE_BOX)); 
+	MainWin = new MainFrame(_("Aorta"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE & ~ (wxRESIZE_BORDER | wxMAXIMIZE_BOX)); 
 	MainWin->Show(TRUE); 
 	SetTopWindow(MainWin); 
 
@@ -196,7 +196,7 @@ void BasicPage::OnLoadNormal(wxCommandEvent &)
 							 Directory,
 							 wxT(""),
 							 wxT("Image Files ") + wxImage::GetImageExtWildcard() + wxT("|All Files|*.*"),
-							 wxOPEN | wxCHANGE_DIR,
+							 wxFD_OPEN | wxFD_CHANGE_DIR,
 							 wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
 	{
@@ -216,7 +216,7 @@ void BasicPage::OnLoadMask(wxCommandEvent &)
 							wxT(""),
 							wxT(""),
 							wxT("Image Files ") + wxImage::GetImageExtWildcard(),
-							wxOPEN | wxCHANGE_DIR,
+							wxFD_OPEN | wxFD_CHANGE_DIR,
 							wxDefaultPosition);
 	if (openFileDialog->ShowModal() == wxID_OK)
 	{
@@ -273,7 +273,7 @@ void BasicPage::OnSaveAs(wxCommandEvent &)
 								Directory,
 						  (normalImageFilename->GetLabel().BeforeLast('.') + wxT(".dds")),
 								wxT("DDS files (*.dds)|*.dds|PNG files (*.png)|*.png"),
-								wxSAVE | wxOVERWRITE_PROMPT | wxCHANGE_DIR,
+								wxFD_SAVE | wxFD_OVERWRITE_PROMPT | wxFD_CHANGE_DIR,
 								wxDefaultPosition);
 		if (saveFileDialog->ShowModal() != wxID_OK) return;
 		
@@ -773,26 +773,26 @@ void BatchPage::SaveRecurseConfig(wxCommandEvent &)
 
 bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-	if (filenames[0])
-		m_page->LoadNormal(filenames[0]);
+    if (!filenames[0].empty())
+        m_page->LoadNormal(filenames[0]);
 }
 
 bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-	if (filenames[0])
-		m_page->LoadMask(filenames[0]);
+    if (!filenames[0].empty())
+        m_page->LoadMask(filenames[0]);
 }
 
 bool DnDBatchFiles::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-	if (filenames[0] && wxFileName(filenames[0]).DirExists())
-		m_page->ChooseSource(filenames[0]);
+    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists())
+        m_page->ChooseSource(filenames[0]);
 }
 
 bool DnDBatchDestination::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-	if (filenames[0] && wxFileName(filenames[0]).DirExists())
-		m_page->ChooseDestination(filenames[0]);
+    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists())
+        m_page->ChooseDestination(filenames[0]);
 }
 #endif
 

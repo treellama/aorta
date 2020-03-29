@@ -92,7 +92,7 @@ public:
 	{
 	    m_name = _T("Direct Draw Surface file");
 	    m_extension = _T("dds");
-	    m_type = wxBITMAP_TYPE_DDS;
+	    m_type = static_cast<wxBitmapType>(wxBITMAP_TYPE_DDS);
 	}
 #if wxUSE_STREAMS
     virtual bool SaveFile ( wxImage *image, wxOutputStream& stream, bool verbose=true );
