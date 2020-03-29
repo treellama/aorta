@@ -399,6 +399,8 @@ bool wxDDSHandler::SaveFile(wxImage *image, wxOutputStream& stream, bool verbose
 	    WriteRGBA(minImage, stream);
 	}
     }
+
+    return true;
 }
 
 int wxDDSHandler::NumMipmaps(const wxImage &image)
@@ -495,14 +497,14 @@ wxImage wxDDSHandler::Minify(wxImage &image, long filter, long wrap_mode)
     else if (wrap_mode == wxIMAGE_OPTION_DDS_WRAP_MIRROR)
 	wm = FloatImage::WrapMode_Mirror;
 
-    std::auto_ptr<FloatImage> minif;
+    std::unique_ptr<FloatImage> minif;
     if (filter == wxIMAGE_OPTION_DDS_FILTER_TRIANGLE) {
 	TriangleFilter filter;
 	minif.reset(f.downSample(TriangleFilter(), wm));
     } else if (filter == wxIMAGE_OPTION_DDS_FILTER_KAISER) {
 	minif.reset(f.downSample(KaiserFilter(3), wm));
     } else {
-	    minif.reset(f.fastDownSample());
+        minif.reset(f.fastDownSample());
     }
     
     minif->toGamma(0, 2);

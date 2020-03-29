@@ -773,26 +773,42 @@ void BatchPage::SaveRecurseConfig(wxCommandEvent &)
 
 bool DnDNormalImage::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (!filenames[0].empty())
+    if (!filenames[0].empty()) {
         m_page->LoadNormal(filenames[0]);
+        return true;
+    }
+
+    return false;
 }
 
 bool DnDMask::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (!filenames[0].empty())
+    if (!filenames[0].empty()) {
         m_page->LoadMask(filenames[0]);
+        return true;
+    }
+
+    return false;
 }
 
 bool DnDBatchFiles::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists())
+    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists()) {
         m_page->ChooseSource(filenames[0]);
+        return true;
+    }
+
+    return false;
 }
 
 bool DnDBatchDestination::OnDropFiles(wxCoord, wxCoord, const wxArrayString& filenames)
 {
-    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists())
+    if (!filenames[0].empty() && wxFileName(filenames[0]).DirExists()) {
         m_page->ChooseDestination(filenames[0]);
+        return true;
+    }
+
+    return false;
 }
 #endif
 

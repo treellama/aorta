@@ -372,7 +372,7 @@ FloatImage * FloatImage::fastDownSample() const
 {
 //	nvDebugCheck(m_width != 1 || m_height != 1);
 	
-	std::auto_ptr<FloatImage> dst_image( new FloatImage() );
+	std::unique_ptr<FloatImage> dst_image( new FloatImage() );
 //	AutoPtr<FloatImage> dst_image( new FloatImage() );
 
 	const uint w = std::max((unsigned int) 1, m_width / 2);
@@ -620,8 +620,8 @@ FloatImage * FloatImage::downSample(const Filter & filter, uint w, uint h, WrapM
 
 //	AutoPtr<FloatImage> tmp_image( new FloatImage() );
 //	AutoPtr<FloatImage> dst_image( new FloatImage() );	
-	std::auto_ptr<FloatImage> tmp_image(new FloatImage() );
-	std::auto_ptr<FloatImage> dst_image(new FloatImage() );
+	std::unique_ptr<FloatImage> tmp_image(new FloatImage() );
+	std::unique_ptr<FloatImage> dst_image(new FloatImage() );
 	
 	PolyphaseKernel xkernel(filter, m_width, w, 32);
 	PolyphaseKernel ykernel(filter, m_height, h, 32);
