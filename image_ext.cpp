@@ -230,7 +230,7 @@ void wxImageExt::UnpremultiplyAlpha()
 
 static bool Downsample(wxImage &src, wxImage &dst)
 {
-	if (src.GetWidth() == 2 || src.GetHeight() == 2) return false;
+	if (src.GetWidth() <= 2 || src.GetHeight() <= 2) return false;
 	int holes = 0;
 	for (int y = 0; y < src.GetHeight(); y++) {
 		for (int x = 0; x < src.GetWidth(); x++) {
@@ -302,7 +302,7 @@ static bool Downsample(wxImage &src, wxImage &dst)
 void wxImageExt::PrepareForMipmaps()
 {
 	std::vector<wxImage> mipmaps;
-	
+
 	mipmaps.push_back(*this);
 
 	wxImageExt temp;
@@ -313,17 +313,24 @@ void wxImageExt::PrepareForMipmaps()
 
 	for (int y = 0; y < GetHeight(); y++) {
 		for (int x = 0; x < GetWidth(); x++) {
-
+                        
 			int sx = x;
 			int sy = y;
-
+                        
 			for (int l = 0; l < mipmaps.size(); l++) {
-				if (mipmaps[l].GetAlpha(sx, sy))
-				{
+                                if (sx >= mipmaps[l].GetWidth()) {
+                                        sx = mipmaps[l].GetWidth() - 1;
+                                }
+
+                                if (sy >= mipmaps[l].GetHeight()) {
+                                        sy = mipmaps[l].GetHeight() - 1;
+                                }
+
+                                if (mipmaps[l].GetAlpha(sx, sy)) {
 					SetRGB(x, y, mipmaps[l].GetRed(sx, sy), mipmaps[l].GetGreen(sx, sy), mipmaps[l].GetBlue(sx, sy));
 					break;
 				}
-		      
+                                
 				sx /= 2;
 				sy /= 2;
 			}
