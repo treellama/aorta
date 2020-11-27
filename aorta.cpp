@@ -672,7 +672,7 @@ void BatchPage::OnConvert(wxCommandEvent &)
 	for (int i = 0; i < filesToConvert.Count(); i++)
 	{
 		wxString progressString;
-		progressString.Printf(wxT("Converting...%i/%i"), i + 1, filesToConvert.Count());
+		progressString.Printf(wxT("Converting...%i/%lu"), i + 1, filesToConvert.Count());
 		if (!pd.Update(i, progressString)) break;
 		wxImageExt normalImage;
 		wxImageExt maskImage;
