@@ -37,7 +37,7 @@ DISTFILES = aorta.cpp "Aorta File.icns" aorta.h Aorta.icns Aorta.ico aorta.rc Ao
 # you shouldn't have to edit anything below this line
 CXX = $(shell $(WX_CONFIG) --cxx)
 
-OPTFLAGS=-g -O2
+OPTFLAGS=-g -O3
 
 .SUFFIXES:	.o .cpp
 
