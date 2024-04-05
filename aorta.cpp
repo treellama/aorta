@@ -71,9 +71,9 @@ MainFrame::MainFrame(const wxString &title, const wxPoint &pos, const wxSize &si
 	notebook->AddPage(batchPage, wxT("Batch Convert"), false);
 
 #ifdef __WIN32__
-	topsizer->Add(notebook, 1, wxEXPAND);
+    topsizer->Add(notebook, 1, wxEXPAND);
 #else
-	topsizer->Add(notebook, 1, wxEXPAND | wxALL, 10);
+	topsizer->Add(notebook, 1, wxEXPAND, 10);
 #endif
 
 	SetAutoLayout(TRUE);
@@ -127,11 +127,11 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 #ifdef wxUSE_DRAG_AND_DROP
 	normalImageStatic->SetDropTarget(new DnDNormalImage(this));
 #endif	
-	column[0]->Add(normalImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
+	column[0]->Add(normalImageStatic, 0, wxEXPAND | wxALL, 10);
 	normalImageFilename = new wxStaticText(this, -1, wxT(""));
-	column[0]->Add(normalImageFilename, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT, 10);
+	column[0]->Add(normalImageFilename, 0, wxEXPAND | wxLEFT | wxRIGHT, 10);
 	normalImageSize = new wxStaticText(this, -1, wxT(""));
-	column[0]->Add(normalImageSize, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	column[0]->Add(normalImageSize, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	normalImageButton = new wxButton(this, BUTTON_NormalImage, wxT("Load normal..."));
 	column[0]->Add(normalImageButton, 0, wxALIGN_CENTER | wxALL, 10);
 	
@@ -149,10 +149,10 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 #ifdef wxUSE_DRAG_AND_DROP
 	maskImageStatic->SetDropTarget(new DnDMask(this));
 #endif
-	column[1]->Add(maskImageStatic, 0, wxALIGN_CENTER | wxEXPAND | wxALL, 10);
+	column[1]->Add(maskImageStatic, 0, wxEXPAND | wxALL, 10);
 
 	maskStatus = new wxStaticText(this, -1, wxT(""));
-	column[1]->Add(maskStatus, 0, wxALIGN_CENTER | wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
+	column[1]->Add(maskStatus, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, 10);
 	column[1]->AddSpacer(maskStatus->GetRect().GetHeight());
 	
 	wxBoxSizer *loadClearSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -160,14 +160,14 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	loadClearSizer->Add(maskImageButton, 1, wxEXPAND | wxRIGHT, 10);
 	clearMaskButton = new wxButton(this, BUTTON_ClearMask, wxT("Clear mask"));
 	loadClearSizer->Add(clearMaskButton, 1, wxEXPAND | wxLEFT, 10);
-	column[1]->Add(loadClearSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
+	column[1]->Add(loadClearSizer, 0, wxEXPAND | wxALL, 10);
 	
 	wxBoxSizer *opacTypeSizer = new wxBoxSizer(wxHORIZONTAL);
 	opacTypeTwo = new wxButton(this, BUTTON_OpacTypeTwo, wxT("Opac_type=2"));
 	opacTypeThree = new wxButton(this, BUTTON_OpacTypeThree, wxT("Opac_type=3"));
 	opacTypeSizer->Add(opacTypeTwo, 1, wxEXPAND | wxRIGHT, 10);
 	opacTypeSizer->Add(opacTypeThree, 1, wxEXPAND | wxLEFT, 10);
-	column[1]->Add(opacTypeSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
+	column[1]->Add(opacTypeSizer, 0, wxEXPAND | wxALL, 10);
 	SetMaskButtonEnablement(false);
 	
 	wxBoxSizer *saveSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -175,7 +175,7 @@ BasicPage::BasicPage(wxWindow *parent, wxWindowID id, const wxPoint &pos, const 
 	saveAsButton->Disable();
 	saveSizer->AddStretchSpacer(1);
 	saveSizer->Add(saveAsButton, 1, wxEXPAND | wxLEFT, 10);
-	column[1]->Add(saveSizer, 0, wxEXPAND | wxALIGN_CENTER | wxALL, 10);
+	column[1]->Add(saveSizer, 0, wxEXPAND | wxALL, 10);
 
 	pageSizer->Add(column[1], 0, wxEXPAND | wxTOP | wxBOTTOM, 10);
 	
@@ -521,9 +521,9 @@ void BatchPage::do_layout()
 	//wxStaticBoxSizer* chooseFilesBox = new wxStaticBoxSizer(chooseFilesStaticBox, wxHORIZONTAL);
 	wxBoxSizer* chooseFilesBox = new wxBoxSizer(wxHORIZONTAL);
 	chooseFiles->SetDropTarget(new DnDBatchFiles(this));
-	chooseFilesBox->Add(chooseFiles, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseFilesBox->Add(chooseFiles, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
 	fileStatus->SetDropTarget(new DnDBatchFiles(this));
-	chooseFilesBox->Add(fileStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseFilesBox->Add(fileStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL, 10);
 	topSizer->Add(chooseFilesBox, 0, wxALL | wxEXPAND, 10);
 	wxBoxSizer* recurseBoxSizer = new wxBoxSizer(wxHORIZONTAL);
 	recurseBoxSizer->AddSpacer(10);
@@ -548,9 +548,9 @@ void BatchPage::do_layout()
 	//wxStaticBoxSizer* chooseDestinationBox = new wxStaticBoxSizer(chooseDestinationStaticBox, wxHORIZONTAL);
 	wxBoxSizer *chooseDestinationBox = new wxBoxSizer(wxHORIZONTAL);
 	selectDestination->SetDropTarget(new DnDBatchDestination(this));
-	chooseDestinationBox->Add(selectDestination, 0, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseDestinationBox->Add(selectDestination, 0, wxALL | wxALIGN_CENTER_VERTICAL, 10);
 	destinationStatus->SetDropTarget(new DnDBatchDestination(this));
-	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL | wxADJUST_MINSIZE, 10);
+	chooseDestinationBox->Add(destinationStatus, 1, wxALL | wxALIGN_CENTER_VERTICAL, 10);
 	topSizer->Add(chooseDestinationBox, 0, wxALL | wxEXPAND, 10);
 	topSizer->Add(new wxStaticLine(this), 0, wxEXPAND);
 	wxBoxSizer *formatSizer = new wxBoxSizer(wxHORIZONTAL);

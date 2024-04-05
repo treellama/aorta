@@ -202,7 +202,9 @@ bool wxDDSHandler::LoadFile(wxImage *image, wxInputStream& stream, bool verbose,
 	if (pitch != ((internalFormat == Format_RGB) ? 3 : 4) * width)
 	{
 	    fprintf(stderr, "we don't know how to do weird pitch\n");
-	    return FALSE;
+            fprintf(stderr, "pitch: %i; internalFormat: %i; width: %i\n", pitch, internalFormat, width);
+            pitch = ((internalFormat == Format_RGB) ? 3 : 4) * width;
+//	    return FALSE;
 	}
 
 	image->Create(width, height);
@@ -512,9 +514,9 @@ wxImage wxDDSHandler::Minify(wxImage &image, long filter, long wrap_mode)
     
     for (int x = 0; x < minif->width(); ++x) {
 	for (int y = 0; y < minif->height(); ++y) {
-	    unsigned int r = clamp((int) (minif->pixel(x, y, 0) * 255.0f), 0, 255);
-	    unsigned int g = clamp((int) (minif->pixel(x, y, 1) * 255.0f), 0, 255);
-	    unsigned int b = clamp((int) (minif->pixel(x, y, 2) * 255.0f), 0, 255);
+	    unsigned int r = ::clamp((int) (minif->pixel(x, y, 0) * 255.0f), 0, 255);
+	    unsigned int g = ::clamp((int) (minif->pixel(x, y, 1) * 255.0f), 0, 255);
+	    unsigned int b = ::clamp((int) (minif->pixel(x, y, 2) * 255.0f), 0, 255);
 	    minifiedImage.SetRGB(x, y, r, g, b);
 	}
     }
@@ -523,7 +525,7 @@ wxImage wxDDSHandler::Minify(wxImage &image, long filter, long wrap_mode)
 	minifiedImage.InitAlpha();
 	for (int x = 0; x < minif->width(); ++x) {
 	    for (int y = 0; y < minif->height(); ++y) {
-		minifiedImage.SetAlpha(x, y, clamp((int) (minif->pixel(x, y, 3) * 255.0f), 0, 255));
+		minifiedImage.SetAlpha(x, y, ::clamp((int) (minif->pixel(x, y, 3) * 255.0f), 0, 255));
 	    }
 	}
     }
